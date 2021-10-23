@@ -3,97 +3,225 @@
   <head>
     <meta charset="UTF-8">
     <title>IFFMC</title>
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
     <link rel="stylesheet" href="index.css">
   </head>
-  <body class="bg-gray-500 h-screen py-1 px-0">
-      <div id="screen" class="h-1/2 text-white px-1">
-        <div id="container" class="h-full grid grid-cols-12">
-          <div id="dButtonCol1" class="mt-5">
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-left', 0)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-left', 1)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-left', 2)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-left', 3)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-left', 4)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-left', 5)">---</button>
+  <body class="bg-secondary p-0" style="height: 100vh;">
+      <section id="side_display" class="w-100 h-50 bg-secondary">
+        <div id="displayBtnContainer" class="row w-100 mx-0 h-100 row-cols-3">
+          <div id="displayBtnColL" class="col-1 h-100 px-1 pt-5">
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-left', 0)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-left', 1)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-left', 2)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-left', 3)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-left', 4)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-left', 5)">--</button>
           </div>
-          <div id="display" class="h-full col-span-10">
-            <canvas class="bg-black h-full w-full rounded" id="displayCanvas"></canvas>
+          <div id="screenContainer" colspan="2" class="col-10 p-0">
+            <canvas id="screen" class="bg-dark h-100 border-dark shadow border-3 rounded w-100"></canvas>
           </div>
-          <div id="dButtonCol2" class="mt-5">
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-right', 0)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-right', 1)">---</button>            
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-right', 2)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-right', 3)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-right', 4)">---</button>
-            <button class="bg-gray-900 w-full p-2 rounded-1xl my-2" onclick="buttonClick('function-right', 5)">---</button>
+          <div id="displayBtnColR" class="col-1 h-100 px-1 pt-5">
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-right', 0)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-right', 1)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-right', 2)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-right', 3)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-right', 4)">--</button>
+            <button class="btn btn-dark w-100 my-2" onclick="buttonClick('function-right', 5)">--</button>
           </div>
         </div>
-      </div>
-      <div id="keyboard" class="h-1/2 p-3">
-        <div class="grid grid-cols-7 text-white gap-2" id="functionRow">
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'FPLN')">FPLN</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'CLB')">CLB</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'CRZ')">CRZ</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'DES')">DES</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'MENU')">MENU</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'LEGS')">LEGS</button>
-          <button class="bg-gray-800 rounded p-2 text-sm border border-white border-2"
-            onclick="buttonClick('function', 'EXEC')">EXEC</button>
-          <button class="bg-gray-900 rounded p-2 text-xs" onclick="buttonClick('function', 'DEPARR')">DEP<br>ARR</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'HOLD')">HOLD</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'PROG')">PROG</button>
-          <button class="bg-gray-900 rounded p-2 text-sm" onclick="buttonClick('function', 'FIX')">FIX</button>
-          <button class="bg-gray-900 rounded p-2 text-xs" onclick="buttonClick('function', 'PPage')">PREV<br>PAGE</button>
-          <button class="bg-gray-900 rounded p-2 text-xs" onclick="buttonClick('function', 'NPage')">NEXT<br>PAGE</button>
+      </section>
+      <section id="side_input" class="w-100 h-50 mx-auto px-4">
+        <div id="functionRow" class="w-100 m-0 row row-cols-7 g-2 px-4 pt-1">
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'INITREF')" style="font-size: 8.3px;">INIT<br>REF</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'RTE')">RTE</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'CLB')">CLB</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'CRZ')">CRZ</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'DES')">DES</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'MENU')">MENU</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100 border border-white border-2"
+              onclick="buttonClick('function', 'EXEC')">EXEC</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'LEGS')">LEGS</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'DEPARR')"
+              style="font-size: 8.3px;">DEP<br>ARR</button>
+          </div>
+          <!--
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'HOLD')">HOLD</button>
+          </div>
+          -->
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'PROG')">PROG</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'FIX')">FIX</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'PPage')"
+              style="font-size: 8.3px;">PREV<br>PAGE</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'NPage')"
+              style="font-size: 8.3px;">NEXT<br>PAGE</button>
+          </div>
+          <div class="col text-start">
+            <button class="btn btn-dark w-100" onclick="buttonClick('function', 'N1LIMIT')"
+              style="font-size: 8.3px;">N1<br>LIMIT</button>
+          </div>
         </div>
-        <br>
-        <div class="float-left grid grid-cols-3 text-white text-center gap-2 w-1/3" id="numRow">
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 1)">1</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 2)">2</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 3)">3</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 4)">4</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 5)">5</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 6)">6</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 7)">7</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 8)">8</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 9)">9</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', '.')">.</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 0)">0</button>
-          <button class="bg-gray-900 rounded-full h-10 w-10 mx-auto items-center justify-center p-2 text-xs" onclick="buttonClick('num', 'p/m')">+/-</button>
-        </div><div class="float-right grid grid-cols-5 text-white gap-1 w-1/2" id="charRow">
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'A')">A</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'B')">B</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'C')">C</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'D')">D</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm border border-white border-3" onclick="buttonClick('char', 'E')">E</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'F')">F</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'G')">G</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'H')">H</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'I')">I</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'J')">J</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'K')">K</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'L')">L</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'M')">M</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm border border-white border-3" onclick="buttonClick('char', 'N')">N</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'O')">O</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'P')">P</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'Q')">Q</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'R')">R</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm border border-white border-3" onclick="buttonClick('char', 'S')">S</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'T')">T</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'U')">U</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'V')">V</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm border border-white border-3" onclick="buttonClick('char', 'W')">W</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'X')">X</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'Y')">Y</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'Z')">Z</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-sm" onclick="buttonClick('char', 'SP')">SP</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-xs" onclick="buttonClick('char', 'DEL')">DEL</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-md" onclick="buttonClick('char', '/')">/</button>
-          <button class="bg-gray-900 rounded mx-auto items-center justify-center py-2 px-4 text-xs" onclick="buttonClick('char', 'CLR')">CLR</button>
+        <div class="row mt-2 ms-4 row-cols-3 gy-2 float-start" id="numpad" style="width: 33%;">
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 1)">1</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 2)">2</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 3)">3</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 4)">4</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 5)">5</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 6)">6</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 7)">7</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 8)">8</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;" onclick="buttonClick('num', 9)">9</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;"
+              onclick="buttonClick('num', '.')">.</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;"
+              onclick="buttonClick('num', 0)">0</button>
+          </div>
+          <div class="col text-center">
+            <button class="btn btn-dark rounded-circle" style="width: 100%; height: 36.7188px;"
+              onclick="buttonClick('num', 'INVERT')">&#177</button>
+          </div>
         </div>
-      </div>
+        <div class="row mt-3 row-cols-5 g-1 float-end me-4" id="keypad" style="width: calc(66% - 48px);">
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'A')">A</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'B')">B</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'C')">C</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'D')">D</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'E')">E</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'F')">F</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'G')">G</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'H')">H</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'I')">I</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'J')">J</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'K')">K</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'L')">L</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'M')">M</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'N')">N</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'O')">O</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'P')">P</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'Q')">Q</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'R')">R</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'S')">S</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'T')">T</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'U')">U</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'V')">V</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'W')">W</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'X')">X</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'Y')">Y</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'Z')">Z</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'SP')">SP</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'DEL')">DEL</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', '/')">/</button>
+          </div>
+          <div class="col text-center">
+            <button style="font-size:  12px; width: 100%; font-weight: bold; font-weight: bold;" class="btn btn-dark" style="width: 100%;" onclick="buttonClick('char', 'CLR')">CLR</button>
+          </div>
+        </div>
+      </section>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
       <script src="fmc.js"></script>
   </body>
 </html>
