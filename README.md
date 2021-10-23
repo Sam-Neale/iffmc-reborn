@@ -19,6 +19,6 @@
 <I>More on the way</I>
 
 ![Screen Shot 2021-10-23 at 12.18.04 pm|474x600, 50%](https://aws1.discourse-cdn.com/infiniteflight/original/4X/e/1/4/e1428d7a834feedd6d589b48e0e5afa7fc19e83a.png)
-![Clicky video](https://raw.githubusercontent.com/sam-neale/iffmc-reborn/picsnvids/click.mp4)
+![Clicky video](https://github.com/Sam-Neale/iffmc-reborn/blob/master/picsnvids/click.mov)
 
 *Developed By @Sam_Neale*
