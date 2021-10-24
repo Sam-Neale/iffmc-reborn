@@ -43,7 +43,22 @@ function buttonClick(type, value){
                 
                 break;
             case "PPage":
-                program.pages.current = page.pPage[1];
+                if (page.pPage != null) {
+                    program.pages.current = page.pPage[1];
+                } else {
+                    SPDataTemp = SPData;
+                    SPData = "NO PAGE"
+                    SPError = true;
+                    setTimeout(() => {
+                        if (SPError) {
+                            SPData = SPDataTemp;
+                            SPError = false;
+                        }
+                    }, 2500);
+                }
+                break;
+            case "INITREF":
+                programData.programs.current = "INIT_REF";
                 break;
             default:
                 console.error("Unknown Value");
@@ -91,7 +106,7 @@ const displayCTX = displayObject.getContext('2d');
 //@ts-ignore
 displayObject.width = 1000;
 //@ts-ignore
-displayObject.height = 762.1704018421823;
+displayObject.height = 774;
 
 //1.312042553191489
 
@@ -107,24 +122,25 @@ function renderDisplay(){
         displayCTX.beginPath();
         displayCTX.setLineDash([15]);
         displayCTX.moveTo(0,650);
-        displayCTX.lineTo(1000, 650);
+        displayCTX.lineTo(1000, 660);
         displayCTX.stroke();
         if(SPError == true){
             displayCTX.fillStyle = '#FF1111';
         }else{
             displayCTX.fillStyle = '#FFFFFF';
         }
-        displayCTX.fillText(SPData, 20, 730);
+        displayCTX.fillText(SPData, 20, 740);
+        displayCTX.fillStyle = '#FFFFFF';
         programData.renderProgram();
         //Pages
     let program = programData.programs[programData.programs.current];
     let page = program.pages[program.pages.current];
     if(page.pPage != null){
-        displayCTX.fillText("<" + page.pPage[0], 20, 685);
+        displayCTX.fillText("<" + page.pPage[0], 20, 695);
     }
     if(page.nPage != null){
         displayCTX.textAlign = 'right';
-        displayCTX.fillText(page.nPage[0] + ">", 980, 685);
+        displayCTX.fillText(page.nPage[0] + ">", 980, 695);
         displayCTX.textAlign = 'left';
     }
 
@@ -142,7 +158,66 @@ const programData = {
         current: 'INIT_REF',
         INIT_REF:{
             render: () =>{
-                
+                //Page Title
+                displayCTX.textAlign = 'center';
+                displayCTX.font = "bold 50px Courier New"
+                displayCTX.fillText("IDENT", 500, 65);
+                //IF Status
+                if(infiniteFlightData.connected == true){
+                    //Header
+                    displayCTX.textAlign = 'left';
+                    displayCTX.font = "bold 25px Courier New";
+                    displayCTX.fillText("Connection", 15, 110);
+                    //Status
+                    displayCTX.font = "normal 35px Courier New";
+                    displayCTX.fillText("Connected", 15, 160);
+                    //Version
+                        displayCTX.textAlign = 'right';
+                        //Header
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("IF Version", 985, 215);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.version, 985, 265);
+                    //Device
+                        //Header
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("Device", 985, 320);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.device, 985, 370);
+                    displayCTX.textAlign = 'left';
+                    //Aircraft
+                        //Header
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("Aircraft", 15, 215);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.vehicle.aircraft, 15, 265);
+                    //Livery
+                        //Header
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("Livery", 15, 320);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.vehicle.livery, 15, 370);
+                }else if(infiniteFlightData.connected == false){
+                    //Header
+                    displayCTX.textAlign = 'left';
+                    displayCTX.font = "bold 25px Courier New";
+                    displayCTX.fillText("Connection", 15, 110);
+                    //Status
+                    displayCTX.font = "normal 35px Courier New";
+                    displayCTX.fillText("Looking", 15, 160);
+                }else{
+                    //Header
+                    displayCTX.textAlign = 'left';
+                    displayCTX.font = "bold 25px Courier New";
+                    displayCTX.fillText("Connection", 15, 110);
+                    //Status
+                    displayCTX.font = "normal 35px Courier New";
+                    displayCTX.fillText("Disconnected", 15, 160);
+                }
             },
             pages: {
                 current: 'page1',
@@ -159,15 +234,33 @@ const programData = {
 }
 
 const infiniteFlightData = {
-    connected: false
+    connected: false,
+    version: "0.0",
+    device: "Unknown",
+    vehicle:{
+        aircraft: "",
+        livery: ""
+    }
 }
 
-const IFC = require('ifc-evolved');
+const { infiniteFlight } = require('ifc-evolved');
+const IFC = require('/Users/samneale/Documents/codeProjects.nosync/ifc-evolved/ifc.js');
+IFC.enableLog = true;
 IFC.init(
-    function () {
+    function (initData) {
         console.log("IFC connected");
         infiniteFlightData.connected = true;
-        IFC.sendCommand({ "Command": "Commands.FlapsDown", "Parameters": [] });
+        infiniteFlightData.device = initData.DeviceName;
+        infiniteFlightData.version = initData.Version.split('.')[0] + "." + initData.Version.split('.')[1];
+        infiniteFlightData.vehicle.aircraft = initData.Aircraft;
+        infiniteFlightData.vehicle.livery = initData.Livery;
+        setTimeout(() => {
+            IFC.getAirplaneState((data) => {
+                console.log(data)
+            })
+        }, 5000);
+        //IFC.sendCommand({ "Command": "Commands.FlapsDown", "Parameters": [] });
+
     },
     function () {
         infiniteFlightData.connected = null;
