@@ -25,6 +25,7 @@ function buttonClick(type, value){
     if(type == "function"){
         let program = programData.programs[programData.programs.current];
         let page = program.pages[program.pages.current];
+        sideButtons.reset();
         switch(value){
             case "NPage":
                 if(page.nPage != null){
@@ -60,14 +61,20 @@ function buttonClick(type, value){
             case "INITREF":
                 programData.programs.current = "INIT_REF";
                 break;
+            case "RTE":
+                programData.programs.current = "RTE";
+                break;
+            case "DEPARR":
+                programData.programs.current = "DEPARR";
+                break;
             default:
                 console.error("Unknown Value");
                 break;
         }
     }else if(type == "function-left"){
-        display.sideButtons.left[`btn${value + 1}`].func();
+        sideButtons.left[`button${value + 1}`].func();
     }else if (type == "function-right"){
-        display.sideButtons.right[`btn${value + 1}`].func();
+        sideButtons.right[`button${value + 1}`].func();
     }else if(type == "num"){
         if(value == "INVERT"){
 
@@ -147,7 +154,7 @@ function renderDisplay(){
         
 }
 
-setInterval(renderDisplay, 100);
+setInterval(renderDisplay, 250);
 
 let SPData = "";
 let SPDataTemp = '';
@@ -175,17 +182,17 @@ const programData = {
                         displayCTX.textAlign = 'right';
                         //Header
                         displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("IF Version", 985, 215);
+                        displayCTX.fillText("IF Version", 985, 110);
                         //Value
                         displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.version, 985, 265);
+                        displayCTX.fillText(infiniteFlightData.version, 985, 160);
                     //Device
                         //Header
                         displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("Device", 985, 320);
+                        displayCTX.fillText("Device", 985, 215);
                         //Value
                         displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.device, 985, 370);
+                        displayCTX.fillText(infiniteFlightData.device, 985, 265);
                     displayCTX.textAlign = 'left';
                     //Aircraft
                         //Header
@@ -216,8 +223,140 @@ const programData = {
                     displayCTX.fillText("Connection", 15, 110);
                     //Status
                     displayCTX.font = "normal 35px Courier New";
-                    displayCTX.fillText("Disconnected", 15, 160);
+                    displayCTX.fillText("Failed", 15, 160);
+                    //RELOAD
+                    displayCTX.font = "bold 35px Courier New";
+                    displayCTX.fillText("Restart FMC", 15, 265);
+                    sideButtons.left.button2.func = function () {
+                        window.location.reload();
+                    }
                 }
+            },
+            pages: {
+                current: 'page1',
+                page1: {
+                    nPage: null,
+                    pPage: null,
+                }
+            }
+        },
+        RTE: {
+            render: () => {
+                //Program Title
+                displayCTX.textAlign = 'center';
+                displayCTX.font = "bold 50px Courier New"
+                displayCTX.fillText("ROUTE", 500, 65);
+                let pageNum = programData.programs.RTE.pages.current;
+                if (pageNum == "page1"){
+                    //Origin
+                        //Header
+                        displayCTX.textAlign = 'left';
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("Origin", 15, 110);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.route.origin != "" ? infiniteFlightData.route.origin : "☐☐☐☐", 15, 160);
+                    //Dest
+                        //Header
+                        displayCTX.textAlign = 'right';
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("Dest", 985, 110);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.route.destination != "" ? infiniteFlightData.route.destination : "☐☐☐☐", 985, 160);
+                        displayCTX.textAlign = 'left';
+                }
+                //Buttons
+                programData.programs.RTE.pages[pageNum].sideButtons.left.forEach(button =>{
+                    let index = button[0];
+                    let func = button[1];
+                    sideButtons.left[index].func = func;
+                })
+                programData.programs.RTE.pages[pageNum].sideButtons.right.forEach(button => {
+                    let index = button[0];
+                    let func = button[1];
+                    sideButtons.right[index].func = func;
+                })
+            },
+            pages: {
+                current: 'page1',
+                page1: {
+                    nPage: null,
+                    pPage: null,
+                    sideButtons:{
+                        left: [['button1', () =>{
+                            if(infiniteFlightData.route.origin == "" || SPData != ""){
+                                infiniteFlightData.route.origin = SPData;
+                                SPData = "";
+                            }else{
+                                SPData = infiniteFlightData.route.origin;
+                                infiniteFlightData.route.origin = "";
+                            }
+                        }]],
+                        right: [['button1', () =>{
+                            if(infiniteFlightData.route.destination == "" || SPData != ""){
+                                infiniteFlightData.route.destination = SPData;
+                                SPData = "";
+                            }else{
+                                SPData = infiniteFlightData.route.destination;
+                                infiniteFlightData.route.destination = "";
+                            }
+                        }]]
+                    }
+                }
+            }
+        },
+        DEPARR:{
+            render: () => {
+                if(infiniteFlightData.route.origin == "" && SPData == ""){
+                    SPDataTemp = SPData;
+                    SPData = "MISSING DEP AIRPORT"
+                    SPError = true;
+                    setTimeout(() => {
+                        if (SPError) {
+                            SPData = SPDataTemp;
+                            SPError = false;
+                        }
+                    }, 2500);
+                }else if(infiniteFlightData.route.destination == "" && SPData == ""){
+                    SPDataTemp = SPData;
+                    SPData = "MISSING ARR AIRPORT"
+                    SPError = true;
+                    setTimeout(() => {
+                        if (SPError) {
+                            SPData = SPDataTemp;
+                            SPError = false;
+                        }
+                    }, 2500);
+                }
+                //Page Title
+                displayCTX.textAlign = 'center';
+                displayCTX.font = "bold 50px Courier New"
+                displayCTX.fillText("DEP/ARR", 500, 65);
+                //Departure
+                    //Indicator
+                    displayCTX.textAlign = 'left';
+                    displayCTX.font = "bold 35px Courier New";
+                    displayCTX.fillText("<DEP", 15, 160);
+                //Arrival
+                    //Indicator 1
+                    //Indicator
+                    displayCTX.textAlign = 'right';
+                    displayCTX.font = "bold 35px Courier New";
+                    displayCTX.fillText("ARR>", 985, 160);
+                    //Indicator 2
+                    //Indicator
+                    displayCTX.font = "bold 35px Courier New";
+                    displayCTX.fillText("ARR>", 985, 265);
+                //Airports
+                    displayCTX.textAlign = 'center';
+                    //Departure
+                    displayCTX.font = "normal 35px Courier New";
+                    displayCTX.fillText(infiniteFlightData.route.origin, 500, 160);
+                    //Arrival
+                    displayCTX.font = "normal 35px Courier New";
+                    displayCTX.fillText(infiniteFlightData.route.destination, 500, 265);
+                    displayCTX.textAlign = 'left';
             },
             pages: {
                 current: 'page1',
@@ -240,11 +379,148 @@ const infiniteFlightData = {
     vehicle:{
         aircraft: "",
         livery: ""
+    },
+    route:{
+        origin: "",
+        destination: ""
     }
 }
 
-const { infiniteFlight } = require('ifc-evolved');
-const IFC = require('/Users/samneale/Documents/codeProjects.nosync/ifc-evolved/ifc.js');
+const sideButtons = {
+    reset: function () {
+        sideButtons.left = {
+            button1: {
+                func: function() {
+                    console.log("Pressed Button 1L")
+                }
+            },
+            button2: {
+                func: function () {
+                    console.log("Pressed Button 3L")
+                }
+            },
+            button3: {
+                func: function () {
+                    console.log("Pressed Button 3L")
+                }
+            },
+            button4: {
+                func: function () {
+                    console.log("Pressed Button 4L")
+                }
+            },
+            button5: {
+                func: function () {
+                    console.log("Pressed Button 5L")
+                }
+            },
+            button6: {
+                func: function () {
+                    console.log("Pressed Button 6L")
+                }
+            }
+        }
+        sideButtons.right = {
+            button1: {
+                func: function () {
+                    console.log("Pressed Button 1R")
+                }
+            },
+            button2: {
+                func: function () {
+                    console.log("Pressed Button 3R")
+                }
+            },
+            button3: {
+                func: function () {
+                    console.log("Pressed Button 3R")
+                }
+            },
+            button4: {
+                func: function () {
+                    console.log("Pressed Button 4R")
+                }
+            },
+            button5: {
+                func: function () {
+                    console.log("Pressed Button 5R")
+                }
+            },
+            button6: {
+                func: function () {
+                    console.log("Pressed Button 6R")
+                }
+            }
+        }
+    },
+    left:{
+        button1: {
+            func: function(){
+                console.log("Pressed Button 1L")
+            }
+        },
+        button2: {
+            func: function () {
+                console.log("Pressed Button 3L")
+            }
+        },
+        button3: {
+            func: function () {
+                console.log("Pressed Button 3L")
+            }
+        },
+        button4: {
+            func: function () {
+                console.log("Pressed Button 4L")
+            }
+        },
+        button5: {
+            func: function () {
+                console.log("Pressed Button 5L")
+            }
+        },
+        button6: {
+            func: function () {
+                console.log("Pressed Button 6L")
+            }
+        }
+    },
+    right: {
+        button1: {
+            func: function () {
+                console.log("Pressed Button 1R")
+            }
+        },
+        button2: {
+            func: function () {
+                console.log("Pressed Button 3R")
+            }
+        },
+        button3: {
+            func: function () {
+                console.log("Pressed Button 3R")
+            }
+        },
+        button4: {
+            func: function () {
+                console.log("Pressed Button 4R")
+            }
+        },
+        button5: {
+            func: function () {
+                console.log("Pressed Button 5R")
+            }
+        },
+        button6: {
+            func: function () {
+                console.log("Pressed Button 6R")
+            }
+        }
+    }
+}
+
+const IFC  = require('ifc-evolved');
+//const IFC = require('/Users/samneale/Documents/codeProjects.nosync/ifc-evolved/ifc.js');
 IFC.enableLog = true;
 IFC.init(
     function (initData) {
