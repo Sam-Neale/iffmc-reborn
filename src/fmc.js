@@ -82,6 +82,7 @@ function buttonClick(type, value){
             SPData += value;
         }
     }else if(type == "char"){
+        displayCTX.textAlign = 'left';
         if(value == "DEL"){
             if (SPError == true) {
                 SPError = false;
@@ -138,19 +139,15 @@ function renderDisplay(){
         }
         displayCTX.fillText(SPData, 20, 740);
         displayCTX.fillStyle = '#FFFFFF';
-        programData.renderProgram();
-        //Pages
+        
+    //Pages
     let program = programData.programs[programData.programs.current];
     let page = program.pages[program.pages.current];
-    if(page.pPage != null){
-        displayCTX.fillText("<" + page.pPage[0], 20, 695);
-    }
-    if(page.nPage != null){
-        displayCTX.textAlign = 'right';
-        displayCTX.fillText(page.nPage[0] + ">", 980, 695);
-        displayCTX.textAlign = 'left';
-    }
-
+    let maxPages = program.pages.max;
+    displayCTX.textAlign = 'right';
+    displayCTX.fillText(`(${page.order}/${maxPages})`, 980, 40);
+    displayCTX.textAlign = 'left';
+    programData.renderProgram();
         
 }
 
@@ -234,7 +231,9 @@ const programData = {
             },
             pages: {
                 current: 'page1',
+                max: 1,
                 page1: {
+                    order: 1,
                     nPage: null,
                     pPage: null,
                 }
@@ -252,7 +251,7 @@ const programData = {
                         //Header
                         displayCTX.textAlign = 'left';
                         displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("Origin", 15, 110);
+                        displayCTX.fillText("ORIGIN", 15, 110);
                         //Value
                         displayCTX.font = "normal 35px Courier New";
                         displayCTX.fillText(infiniteFlightData.route.origin != "" ? infiniteFlightData.route.origin : "☐☐☐☐", 15, 160);
@@ -260,11 +259,231 @@ const programData = {
                         //Header
                         displayCTX.textAlign = 'right';
                         displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("Dest", 985, 110);
+                        displayCTX.fillText("DEST", 985, 110);
                         //Value
                         displayCTX.font = "normal 35px Courier New";
                         displayCTX.fillText(infiniteFlightData.route.destination != "" ? infiniteFlightData.route.destination : "☐☐☐☐", 985, 160);
                         displayCTX.textAlign = 'left';
+                    //Runway
+                        //Header
+                        displayCTX.textAlign = 'left';
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("RUNWAY", 15, 215);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.route.depRunway != "" ? infiniteFlightData.route.depRunway : "☐☐☐", 15, 265);
+                        displayCTX.textAlign = 'left';
+                }else{
+                    //Left Col Header
+                    displayCTX.textAlign = 'left';
+                    displayCTX.font = "bold 30px Courier New";
+                    displayCTX.fillText("VIA", 15, 105);
+                    //Right Col Header
+                    displayCTX.textAlign = 'right';
+                    displayCTX.font = "bold 30px Courier New";
+                    displayCTX.fillText("TO", 985, 105);
+                    
+                    //Get current page
+                    let program = programData.programs[programData.programs.current];
+                    let page = program.pages[program.pages.current];
+                    //Get Fix Plus
+                    let fixPlus = page.custom.fixPlus;
+                    //Calculate next page required
+                    if (page.nPage == null && infiniteFlightData.route.fixes[page.custom.fixPlus + 4]){
+                        let nPageNum = Object.keys(program.pages).length - 1;
+                        page.nPage = ['Fixes Cont.', `page${nPageNum}`];
+                        program.pages.max++;
+                        program.pages[`page${nPageNum}`] = {
+                            nPage: null,
+                            pPage: ["Fixes", `page${(nPageNum-1).toString()}`],
+                            order: nPageNum,
+                            custom: {
+                                fixPlus: (nPageNum * 5) - 10
+                            },
+                            sideButtons:{
+                                left: [
+                                    ['button1', () => {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "AIRWAYS NOT ALLOWED") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "AIRWAYS NOT ALLOWED"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }],
+                                    ['button2', () => {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "AIRWAYS NOT ALLOWED") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "AIRWAYS NOT ALLOWED"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }],
+                                    ['button3', () => {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "AIRWAYS NOT ALLOWED") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "AIRWAYS NOT ALLOWED"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }],
+                                    ['button4', () => {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "AIRWAYS NOT ALLOWED") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "AIRWAYS NOT ALLOWED"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }],
+                                    ['button5', () => {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "AIRWAYS NOT ALLOWED") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "AIRWAYS NOT ALLOWED"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }],
+                                    ['button6', () => {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "AIRWAYS NOT ALLOWED") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "AIRWAYS NOT ALLOWED"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }]
+                                ],
+                                right: [
+                                    ['button1', () => {
+                                        let program = programData.programs[programData.programs.current];
+                                        let page = program.pages[program.pages.current];
+                                        if (SPData != "") {
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = SPData;;
+                                            SPData = "";
+                                        } else {
+                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + 0];
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = "";
+                                        }
+                                    }],
+                                    ['button2', () => {
+                                        let program = programData.programs[programData.programs.current];
+                                        let page = program.pages[program.pages.current];
+                                        let btnNum = 1;
+                                        if (SPData != "") {
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                            SPData = "";
+                                        } else {
+                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                        }
+                                    }],
+                                    ['button3', () => {
+                                        let program = programData.programs[programData.programs.current];
+                                        let page = program.pages[program.pages.current];
+                                        let btnNum = 2;
+                                        if (SPData != "") {
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                            SPData = "";
+                                        } else {
+                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                        }
+                                    }],
+                                    ['button4', () => {
+                                        let program = programData.programs[programData.programs.current];
+                                        let page = program.pages[program.pages.current];
+                                        let btnNum = 3;
+                                        if (SPData != "") {
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                            SPData = "";
+                                        } else {
+                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                        }
+                                    }],
+                                    ['button5', () => {
+                                        let program = programData.programs[programData.programs.current];
+                                        let page = program.pages[program.pages.current];
+                                        let btnNum = 4;
+                                        if (SPData != "") {
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                            SPData = "";
+                                        } else {
+                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                        }
+                                    }]
+                                ]
+                            }
+                        }
+                    }
+                    //Render Values
+                    displayCTX.font = "normal 35px Courier New";
+                    let plus = 0;
+                    //Num 1
+                    displayCTX.textAlign = 'right';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 160);
+                    displayCTX.textAlign = 'left';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 160);
+                    //Num 2
+                    plus = 1;
+                    displayCTX.textAlign = 'right';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 265);
+                    displayCTX.textAlign = 'left';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 265);
+                    //Num 3
+                    plus = 2;
+                    displayCTX.textAlign = 'right';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 370);
+                    displayCTX.textAlign = 'left';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 370);
+                    //Num 4
+                    plus = 3;
+                    displayCTX.textAlign = 'right';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 475);
+                    displayCTX.textAlign = 'left';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 475);
+                    //Num 5
+                    plus = 4;
+                    displayCTX.textAlign = 'right';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 580);
+                    displayCTX.textAlign = 'left';
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 580);
+                    displayCTX.textAlign = 'left';
                 }
                 //Buttons
                 programData.programs.RTE.pages[pageNum].sideButtons.left.forEach(button =>{
@@ -280,9 +499,11 @@ const programData = {
             },
             pages: {
                 current: 'page1',
+                max: 2,
                 page1: {
-                    nPage: null,
+                    nPage: ['Fixes', 'page2'],
                     pPage: null,
+                    order: 1,
                     sideButtons:{
                         left: [['button1', () =>{
                             if(infiniteFlightData.route.origin == "" || SPData != ""){
@@ -291,6 +512,14 @@ const programData = {
                             }else{
                                 SPData = infiniteFlightData.route.origin;
                                 infiniteFlightData.route.origin = "";
+                            }
+                        }], ['button2', () => {
+                            if (infiniteFlightData.route.depRunway == "" || SPData != "") {
+                                infiniteFlightData.route.depRunway = SPData;
+                                SPData = "";
+                            } else {
+                                SPData = infiniteFlightData.route.depRunway;
+                                infiniteFlightData.route.depRunway = "";
                             }
                         }]],
                         right: [['button1', () =>{
@@ -303,42 +532,215 @@ const programData = {
                             }
                         }]]
                     }
+                },
+                page2: {
+                    nPage: null,
+                    pPage: ["Core", "page1"],
+                    order: 2,
+                    custom:{
+                        fixPlus: 0,
+                    },
+                    sideButtons: {
+                        left: [
+                            ['button1', () => {
+                                displayCTX.textAlign = 'left';
+                                if (SPData != "AIRWAYS NOT ALLOWED") {
+                                    SPDataTemp = SPData;
+                                }
+                                SPData = "AIRWAYS NOT ALLOWED"
+                                SPError = true;
+                                setTimeout(() => {
+                                    if (SPError) {
+                                        SPData = SPDataTemp;
+                                        SPError = false;
+                                    }
+                                }, 2500);
+                            }],
+                            ['button2', () => {
+                                displayCTX.textAlign = 'left';
+                                if (SPData != "AIRWAYS NOT ALLOWED") {
+                                    SPDataTemp = SPData;
+                                }
+                                SPData = "AIRWAYS NOT ALLOWED"
+                                SPError = true;
+                                setTimeout(() => {
+                                    if (SPError) {
+                                        SPData = SPDataTemp;
+                                        SPError = false;
+                                    }
+                                }, 2500);
+                            }],
+                            ['button3', () => {
+                                displayCTX.textAlign = 'left';
+                                if (SPData != "AIRWAYS NOT ALLOWED") {
+                                    SPDataTemp = SPData;
+                                }
+                                SPData = "AIRWAYS NOT ALLOWED"
+                                SPError = true;
+                                setTimeout(() => {
+                                    if (SPError) {
+                                        SPData = SPDataTemp;
+                                        SPError = false;
+                                    }
+                                }, 2500);
+                            }],
+                            ['button4', () => {
+                                displayCTX.textAlign = 'left';
+                                if (SPData != "AIRWAYS NOT ALLOWED") {
+                                    SPDataTemp = SPData;
+                                }
+                                SPData = "AIRWAYS NOT ALLOWED"
+                                SPError = true;
+                                setTimeout(() => {
+                                    if (SPError) {
+                                        SPData = SPDataTemp;
+                                        SPError = false;
+                                    }
+                                }, 2500);
+                            }],
+                            ['button5', () => {
+                                displayCTX.textAlign = 'left';
+                                if (SPData != "AIRWAYS NOT ALLOWED") {
+                                    SPDataTemp = SPData;
+                                }
+                                SPData = "AIRWAYS NOT ALLOWED"
+                                SPError = true;
+                                setTimeout(() => {
+                                    if (SPError) {
+                                        SPData = SPDataTemp;
+                                        SPError = false;
+                                    }
+                                }, 2500);
+                            }],
+                            ['button6', () => {
+                                displayCTX.textAlign = 'left';
+                                if (SPData != "AIRWAYS NOT ALLOWED") {
+                                    SPDataTemp = SPData;
+                                }
+                                SPData = "AIRWAYS NOT ALLOWED"
+                                SPError = true;
+                                setTimeout(() => {
+                                    if (SPError) {
+                                        SPData = SPDataTemp;
+                                        SPError = false;
+                                    }
+                                }, 2500);
+                            }]
+                        ],
+                        right: [
+                            ['button1', () => {
+                                let program = programData.programs[programData.programs.current];
+                                let page = program.pages[program.pages.current];
+                                if (SPData != "") {
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = SPData;
+                                    SPData = "";
+                                } else {
+                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + 0];
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = "";
+                                }
+                            }],
+                            ['button2', () => {
+                                let program = programData.programs[programData.programs.current];
+                                let page = program.pages[program.pages.current];
+                                let btnNum = 1;
+                                if (SPData != "") {
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                    SPData = "";
+                                } else {
+                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                }
+                            }],
+                            ['button3', () => {
+                                let program = programData.programs[programData.programs.current];
+                                let page = program.pages[program.pages.current];
+                                let btnNum = 2;
+                                if (SPData != "") {
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                    SPData = "";
+                                } else {
+                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                }
+                            }],
+                            ['button4', () => {
+                                let program = programData.programs[programData.programs.current];
+                                let page = program.pages[program.pages.current];
+                                let btnNum = 3;
+                                if (SPData != "") {
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                    SPData = "";
+                                } else {
+                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                }
+                            }],
+                            ['button5', () => {
+                                let program = programData.programs[programData.programs.current];
+                                let page = program.pages[program.pages.current];
+                                let btnNum = 4;
+                                if (SPData != "") {
+                                    console.log("BIG TEST" + page.custom.fixPlus + btnNum)
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
+                                    SPData = "";
+                                } else {
+                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
+                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
+                                }
+                            }]
+                        ]
+                    }
                 }
             }
         },
         DEPARR:{
             render: () => {
-                if(infiniteFlightData.route.origin == "" && SPData == ""){
-                    SPDataTemp = SPData;
-                    SPData = "MISSING DEP AIRPORT"
-                    SPError = true;
-                    setTimeout(() => {
-                        if (SPError) {
-                            SPData = SPDataTemp;
-                            SPError = false;
-                        }
-                    }, 2500);
-                }else if(infiniteFlightData.route.destination == "" && SPData == ""){
-                    SPDataTemp = SPData;
-                    SPData = "MISSING ARR AIRPORT"
-                    SPError = true;
-                    setTimeout(() => {
-                        if (SPError) {
-                            SPData = SPDataTemp;
-                            SPError = false;
-                        }
-                    }, 2500);
-                }
                 //Page Title
                 displayCTX.textAlign = 'center';
                 displayCTX.font = "bold 50px Courier New"
                 displayCTX.fillText("DEP/ARR", 500, 65);
-                //Departure
+                if(true){
+                    displayCTX.textAlign = 'left';
+                    if(SPData != "PAGE NOT AVAILABLE"){
+                        SPDataTemp = SPData;
+                    }
+                    SPData = "PAGE NOT AVAILABLE"
+                    SPError = true;
+                    setTimeout(() => {
+                        if (SPError && programData.programs.current != "DEPARR") {
+                            SPData = SPDataTemp;
+                            SPError = false;
+                        }
+                    }, 2500);
+                }else{
+                    if (infiniteFlightData.route.origin == "" && SPData == "") {
+                        SPDataTemp = SPData;
+                        SPData = "MISSING DEP AIRPORT"
+                        SPError = true;
+                        setTimeout(() => {
+                            if (SPError) {
+                                SPData = SPDataTemp;
+                                SPError = false;
+                            }
+                        }, 2500);
+                    } else if (infiniteFlightData.route.destination == "" && SPData == "") {
+                        SPDataTemp = SPData;
+                        SPData = "MISSING ARR AIRPORT"
+                        SPError = true;
+                        setTimeout(() => {
+                            if (SPError) {
+                                SPData = SPDataTemp;
+                                SPError = false;
+                            }
+                        }, 2500);
+                    }
+
+                    //Departure
                     //Indicator
                     displayCTX.textAlign = 'left';
                     displayCTX.font = "bold 35px Courier New";
                     displayCTX.fillText("<DEP", 15, 160);
-                //Arrival
+                    //Arrival
                     //Indicator 1
                     //Indicator
                     displayCTX.textAlign = 'right';
@@ -348,7 +750,7 @@ const programData = {
                     //Indicator
                     displayCTX.font = "bold 35px Courier New";
                     displayCTX.fillText("ARR>", 985, 265);
-                //Airports
+                    //Airports
                     displayCTX.textAlign = 'center';
                     //Departure
                     displayCTX.font = "normal 35px Courier New";
@@ -357,10 +759,14 @@ const programData = {
                     displayCTX.font = "normal 35px Courier New";
                     displayCTX.fillText(infiniteFlightData.route.destination, 500, 265);
                     displayCTX.textAlign = 'left';
+                }
+                
             },
             pages: {
                 current: 'page1',
+                max: 1,
                 page1: {
+                    order: 1,
                     nPage: null,
                     pPage: null,
                 }
@@ -381,6 +787,10 @@ const infiniteFlightData = {
         livery: ""
     },
     route:{
+        fixes:[
+
+        ],
+        depRunway: "",
         origin: "",
         destination: ""
     }

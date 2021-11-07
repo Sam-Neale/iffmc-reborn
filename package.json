@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-    "ifc-evolved": "^1.1.2"
+    "ifc-evolved": "1.1.3"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.61",
