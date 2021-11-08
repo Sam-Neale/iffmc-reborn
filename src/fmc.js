@@ -495,33 +495,33 @@ const programData = {
                     let plus = 0;
                     //Num 1
                     displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 160);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 160);
                     displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 160);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 160);
                     //Num 2
                     plus = 1;
                     displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 265);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 265);
                     displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 265);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 265);
                     //Num 3
                     plus = 2;
                     displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 370);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 370);
                     displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 370);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 370);
                     //Num 4
                     plus = 3;
                     displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 475);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 475);
                     displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 475);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 475);
                     //Num 5
                     plus = 4;
                     displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 580);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 580);
                     displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] != undefined ? "DIRECT" : "", 15, 580);
+                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 580);
                     displayCTX.textAlign = 'left';
                 }
                 //Buttons
