@@ -67,6 +67,9 @@ function buttonClick(type, value){
             case "DEPARR":
                 programData.programs.current = "DEPARR";
                 break;
+            case "EXEC":
+                buttonActions.exec.action();
+                break;
             default:
                 console.error("Unknown Value");
                 break;
@@ -111,6 +114,15 @@ const displayObject = document.getElementById('screen');
 //@ts-ignore
 const displayCTX = displayObject.getContext('2d');
 
+let buttonActions = {
+    exec: {
+        program: 'INIT',
+        action: function(){
+            console.log("Executed")
+        }
+    }
+}
+
 //@ts-ignore
 displayObject.width = 1000;
 //@ts-ignore
@@ -130,7 +142,7 @@ function renderDisplay(){
         displayCTX.beginPath();
         displayCTX.setLineDash([15]);
         displayCTX.moveTo(0,650);
-        displayCTX.lineTo(1000, 660);
+        displayCTX.lineTo(1000, 650);
         displayCTX.stroke();
         if(SPError == true){
             displayCTX.fillStyle = '#FF1111';
@@ -245,7 +257,34 @@ const programData = {
                 displayCTX.textAlign = 'center';
                 displayCTX.font = "bold 50px Courier New"
                 displayCTX.fillText("ROUTE", 500, 65);
+
+                //Execute
+                if(buttonActions.exec.program != "RTE"){
+                    buttonActions.exec.program = "RTE";
+                    buttonActions.exec.action = function () {
+                        IFC.sendCommand({
+                            "Command": "Commands.FlightPlan.Clear",
+                            "Parameters": []
+                        })
+                        /*IFC.sendCommand({
+                            "Command": "Commands.FlightPlan.AddWaypoints",
+                            "Parameters": [{ "Name": "WPT", "Value": infiniteFlightData.route.origin}]
+                        });*/
+                        infiniteFlightData.route.fixes.forEach(fix =>{
+                            IFC.sendCommand({
+                                "Command": "Commands.FlightPlan.AddWaypoints",
+                                "Parameters": [{ "Name": "WPT", "Value": fix }]
+                            });
+                        })
+                        IFC.sendCommand({
+                            "Command": "Commands.FlightPlan.AddWaypoints",
+                            "Parameters": [{ "Name": "WPT", "Value": infiniteFlightData.route.destination }]
+                        });
+                    }
+                }
+
                 let pageNum = programData.programs.RTE.pages.current;
+
                 if (pageNum == "page1"){
                     //Origin
                         //Header
@@ -778,7 +817,7 @@ const programData = {
     }
 }
 
-const infiniteFlightData = {
+let infiniteFlightData = {
     connected: false,
     version: "0.0",
     device: "Unknown",
