@@ -20,7 +20,7 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "icon": "src/IFFMC.icns"
+        "icon": "./src/icons/mac.icns"
       },
       "makers": [
         {
