@@ -220,6 +220,15 @@ const programData = {
                         //Value
                         displayCTX.font = "normal 35px Courier New";
                         displayCTX.fillText(infiniteFlightData.vehicle.livery, 15, 370);
+                    //Keyboard
+                        displayCTX.textAlign = 'right';
+                        //Header
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("Keyboard", 985, 320);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(keyboardEnabled ? "Enabled" : "Disabled", 985, 370);
+                    displayCTX.textAlign = 'left';
                 }else if(infiniteFlightData.connected == false){
                     //Header
                     displayCTX.textAlign = 'left';
@@ -243,6 +252,13 @@ const programData = {
                         window.location.reload();
                     }
                 }
+
+                //Buttons
+                programData.programs.INIT_REF.pages.page1.sideButtons.right.forEach(button => {
+                    let index = button[0];
+                    let func = button[1];
+                    sideButtons.right[index].func = func;
+                })
             },
             pages: {
                 current: 'page1',
@@ -251,6 +267,15 @@ const programData = {
                     order: 1,
                     nPage: null,
                     pPage: null,
+                    sideButtons: {
+                        right: [['button3', () =>{
+                            if(keyboardEnabled == true){
+                                keyboardEnabled = false;
+                            }else{
+                                keyboardEnabled = true;
+                            }
+                        }]]
+                    }
                 }
             }
         },
@@ -1199,3 +1224,14 @@ IFC.init(
         IFC.log("IFC connection error");
     }
 )
+
+
+
+//Check for keyboard
+let keyboardEnabled = false;
+
+window.addEventListener('keydown', (e) =>{
+    if(keyboardEnabled){
+        SPData += (e.key).toUpperCase();
+    }
+})
