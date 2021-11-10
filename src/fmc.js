@@ -303,7 +303,7 @@ const programData = {
                             if (infiniteFlightData.route.alts.has(fix)) {
                                 let AltVal = infiniteFlightData.route.alts.get(fix);
                                 if (AltVal) {
-                                    name += AltVal.toString();
+                                    name += `@FL${AltVal.toString()}`;
                                 }
                             }
                             console.log(name);
@@ -874,16 +874,12 @@ const programData = {
                             "Command": "Commands.FlightPlan.Clear",
                             "Parameters": []
                         })
-                        /*IFC.sendCommand({
-                            "Command": "Commands.FlightPlan.AddWaypoints",
-                            "Parameters": [{ "Name": "WPT", "Value": infiniteFlightData.route.origin}]
-                        });*/
                         infiniteFlightData.route.fixes.forEach(fix => {
                             let name = fix;
                             if(infiniteFlightData.route.alts.has(fix)){
                                 let AltVal = infiniteFlightData.route.alts.get(fix);
                                 if(AltVal){
-                                    name += AltVal.toString();
+                                    name += `@${AltVal.toString()}`;
                                 }
                             }
                             console.log(name);
@@ -924,14 +920,284 @@ const programData = {
                                 fixPlus: (newPageNum - 1) * 5
                             },
                             sideButtons: {
-                                left: [],
+                                right: [
+                                    ['button1', () =>{
+                                        let plus = 0;
+                                        //Fix name    
+                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                        //Fix altitude
+                                        if(infiniteFlightData.route.alts.has(fixName)){
+                                            try{
+                                                let altNum = parseInt(SPData);
+                                                if(altNum != NaN){
+                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                                }else{
+                                                    displayCTX.textAlign = 'left';
+                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                        SPDataTemp = SPData;
+                                                    }
+                                                    SPData = "UNABLE TO PARSE ALTITUDE"
+                                                    SPError = true;
+                                                    setTimeout(() => {
+                                                        if (SPError) {
+                                                            SPData = SPDataTemp;
+                                                            SPError = false;
+                                                        }
+                                                    }, 2500);
+                                                }
+                                            }catch(err){
+                                                displayCTX.textAlign = 'left';
+                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                    SPDataTemp = SPData;
+                                                }
+                                                SPData = "UNABLE TO PARSE ALTITUDE"
+                                                SPError = true;
+                                                setTimeout(() => {
+                                                    if (SPError) {
+                                                        SPData = SPDataTemp;
+                                                        SPError = false;
+                                                    }
+                                                }, 2500);
+                                            }
+                                            
+                                        }else{
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO LOCATE FIX") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO LOCATE FIX"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    }],
+                                    ['button2', () => {
+                                        let plus = 1;
+                                        //Fix name    
+                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                        //Fix altitude
+                                        if (infiniteFlightData.route.alts.has(fixName)) {
+                                            try {
+                                                let altNum = parseInt(SPData);
+                                                if (altNum != NaN) {
+                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                                } else {
+                                                    displayCTX.textAlign = 'left';
+                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                        SPDataTemp = SPData;
+                                                    }
+                                                    SPData = "UNABLE TO PARSE ALTITUDE"
+                                                    SPError = true;
+                                                    setTimeout(() => {
+                                                        if (SPError) {
+                                                            SPData = SPDataTemp;
+                                                            SPError = false;
+                                                        }
+                                                    }, 2500);
+                                                }
+                                            } catch (err) {
+                                                displayCTX.textAlign = 'left';
+                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                    SPDataTemp = SPData;
+                                                }
+                                                SPData = "UNABLE TO PARSE ALTITUDE"
+                                                SPError = true;
+                                                setTimeout(() => {
+                                                    if (SPError) {
+                                                        SPData = SPDataTemp;
+                                                        SPError = false;
+                                                    }
+                                                }, 2500);
+                                            }
+
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO LOCATE FIX") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO LOCATE FIX"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    }],
+                                    ['button3', () => {
+                                        let plus = 2;
+                                        //Fix name    
+                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                        //Fix altitude
+                                        if (infiniteFlightData.route.alts.has(fixName)) {
+                                            try {
+                                                let altNum = parseInt(SPData);
+                                                if (altNum != NaN) {
+                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                                } else {
+                                                    displayCTX.textAlign = 'left';
+                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                        SPDataTemp = SPData;
+                                                    }
+                                                    SPData = "UNABLE TO PARSE ALTITUDE"
+                                                    SPError = true;
+                                                    setTimeout(() => {
+                                                        if (SPError) {
+                                                            SPData = SPDataTemp;
+                                                            SPError = false;
+                                                        }
+                                                    }, 2500);
+                                                }
+                                            } catch (err) {
+                                                displayCTX.textAlign = 'left';
+                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                    SPDataTemp = SPData;
+                                                }
+                                                SPData = "UNABLE TO PARSE ALTITUDE"
+                                                SPError = true;
+                                                setTimeout(() => {
+                                                    if (SPError) {
+                                                        SPData = SPDataTemp;
+                                                        SPError = false;
+                                                    }
+                                                }, 2500);
+                                            }
+
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO LOCATE FIX") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO LOCATE FIX"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    }],
+                                    ['button4', () => {
+                                        let plus = 3;
+                                        //Fix name    
+                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                        //Fix altitude
+                                        if (infiniteFlightData.route.alts.has(fixName)) {
+                                            try {
+                                                let altNum = parseInt(SPData);
+                                                if (altNum != NaN) {
+                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                                } else {
+                                                    displayCTX.textAlign = 'left';
+                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                        SPDataTemp = SPData;
+                                                    }
+                                                    SPData = "UNABLE TO PARSE ALTITUDE"
+                                                    SPError = true;
+                                                    setTimeout(() => {
+                                                        if (SPError) {
+                                                            SPData = SPDataTemp;
+                                                            SPError = false;
+                                                        }
+                                                    }, 2500);
+                                                }
+                                            } catch (err) {
+                                                displayCTX.textAlign = 'left';
+                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                    SPDataTemp = SPData;
+                                                }
+                                                SPData = "UNABLE TO PARSE ALTITUDE"
+                                                SPError = true;
+                                                setTimeout(() => {
+                                                    if (SPError) {
+                                                        SPData = SPDataTemp;
+                                                        SPError = false;
+                                                    }
+                                                }, 2500);
+                                            }
+
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO LOCATE FIX") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO LOCATE FIX"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    }],
+                                    ['button5', () => {
+                                        let plus = 4;
+                                        //Fix name    
+                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                        //Fix altitude
+                                        if (infiniteFlightData.route.alts.has(fixName)) {
+                                            try {
+                                                let altNum = parseInt(SPData);
+                                                if (altNum != NaN) {
+                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                                } else {
+                                                    displayCTX.textAlign = 'left';
+                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                        SPDataTemp = SPData;
+                                                    }
+                                                    SPData = "UNABLE TO PARSE ALTITUDE"
+                                                    SPError = true;
+                                                    setTimeout(() => {
+                                                        if (SPError) {
+                                                            SPData = SPDataTemp;
+                                                            SPError = false;
+                                                        }
+                                                    }, 2500);
+                                                }
+                                            } catch (err) {
+                                                displayCTX.textAlign = 'left';
+                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                    SPDataTemp = SPData;
+                                                }
+                                                SPData = "UNABLE TO PARSE ALTITUDE"
+                                                SPError = true;
+                                                setTimeout(() => {
+                                                    if (SPError) {
+                                                        SPData = SPDataTemp;
+                                                        SPError = false;
+                                                    }
+                                                }, 2500);
+                                            }
+
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO LOCATE FIX") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO LOCATE FIX"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    }]
+                                ],
                             }
                         };
                     }
                 }
 
                 //Rendering
-                console.log(pagesRequired)
                 if(pagesRequired == 0){
                     setTimeout(() => {
                         if(pagesRequired == 0){
@@ -948,7 +1214,7 @@ const programData = {
                                 }
                             }, 2500);
                         }
-                    }, 500);
+                    }, 1000);
                     
                 }else{
                     //Left Col Header
@@ -1022,6 +1288,12 @@ const programData = {
                             (altitude);
                             displayCTX.fillText(altitude ? infiniteFlightData.route.alts.get(name) : name ? "☐☐☐☐☐" : "", 985, 580);
                             displayCTX.textAlign = 'left';
+                    //Buttons
+                    page.sideButtons.right.forEach(button => {
+                        let index = button[0];
+                        let func = button[1];
+                        sideButtons.right[index].func = func;
+                    })
 
                 }
             },
@@ -1037,7 +1309,281 @@ const programData = {
                     },
                     sideButtons: {
                         left: [],
-                        right: []
+                        right: [['button1', () => {
+                            let plus = 0;
+                            //Fix name    
+                            let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
+                            let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                            //Fix altitude
+                            if (infiniteFlightData.route.alts.has(fixName)) {
+                                try {
+                                    let altNum = parseInt(SPData);
+                                    if (altNum != NaN) {
+                                        infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                    } else {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "UNABLE TO PARSE ALTITUDE"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }
+                                } catch (err) {
+                                    displayCTX.textAlign = 'left';
+                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                        SPDataTemp = SPData;
+                                    }
+                                    SPData = "UNABLE TO PARSE ALTITUDE"
+                                    SPError = true;
+                                    setTimeout(() => {
+                                        if (SPError) {
+                                            SPData = SPDataTemp;
+                                            SPError = false;
+                                        }
+                                    }, 2500);
+                                }
+
+                            } else {
+                                displayCTX.textAlign = 'left';
+                                if (SPData != "UNABLE TO LOCATE FIX") {
+                                    SPDataTemp = SPData;
+                                }
+                                SPData = "UNABLE TO LOCATE FIX"
+                                SPError = true;
+                                setTimeout(() => {
+                                    if (SPError) {
+                                        SPData = SPDataTemp;
+                                        SPError = false;
+                                    }
+                                }, 2500);
+                            }
+                        }],
+                            ['button2', () => {
+                                let plus = 1;
+                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
+                                //Fix name    
+                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                //Fix altitude
+                                if (infiniteFlightData.route.alts.has(fixName)) {
+                                    try {
+                                        let altNum = parseInt(SPData);
+                                        if (altNum != NaN) {
+                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO PARSE ALTITUDE"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    } catch (err) {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "UNABLE TO PARSE ALTITUDE"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }
+
+                                } else {
+                                    displayCTX.textAlign = 'left';
+                                    if (SPData != "UNABLE TO LOCATE FIX") {
+                                        SPDataTemp = SPData;
+                                    }
+                                    SPData = "UNABLE TO LOCATE FIX"
+                                    SPError = true;
+                                    setTimeout(() => {
+                                        if (SPError) {
+                                            SPData = SPDataTemp;
+                                            SPError = false;
+                                        }
+                                    }, 2500);
+                                }
+                            }],
+                            ['button3', () => {
+                                let plus = 2;
+                                //Fix name    
+                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
+                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                //Fix altitude
+                                if (infiniteFlightData.route.alts.has(fixName)) {
+                                    try {
+                                        let altNum = parseInt(SPData);
+                                        if (altNum != NaN) {
+                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO PARSE ALTITUDE"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    } catch (err) {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "UNABLE TO PARSE ALTITUDE"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }
+
+                                } else {
+                                    displayCTX.textAlign = 'left';
+                                    if (SPData != "UNABLE TO LOCATE FIX") {
+                                        SPDataTemp = SPData;
+                                    }
+                                    SPData = "UNABLE TO LOCATE FIX"
+                                    SPError = true;
+                                    setTimeout(() => {
+                                        if (SPError) {
+                                            SPData = SPDataTemp;
+                                            SPError = false;
+                                        }
+                                    }, 2500);
+                                }
+                            }],
+                            ['button4', () => {
+                                let plus = 3;
+                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
+                                //Fix name    
+                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                //Fix altitude
+                                if (infiniteFlightData.route.alts.has(fixName)) {
+                                    try {
+                                        let altNum = parseInt(SPData);
+                                        if (altNum != NaN) {
+                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO PARSE ALTITUDE"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    } catch (err) {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "UNABLE TO PARSE ALTITUDE"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }
+
+                                } else {
+                                    displayCTX.textAlign = 'left';
+                                    if (SPData != "UNABLE TO LOCATE FIX") {
+                                        SPDataTemp = SPData;
+                                    }
+                                    SPData = "UNABLE TO LOCATE FIX"
+                                    SPError = true;
+                                    setTimeout(() => {
+                                        if (SPError) {
+                                            SPData = SPDataTemp;
+                                            SPError = false;
+                                        }
+                                    }, 2500);
+                                }
+                            }],
+                            ['button5', () => {
+                                let plus = 4;
+                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
+                                //Fix name    
+                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
+                                //Fix altitude
+                                if (infiniteFlightData.route.alts.has(fixName)) {
+                                    try {
+                                        let altNum = parseInt(SPData);
+                                        if (altNum != NaN) {
+                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
+                                        } else {
+                                            displayCTX.textAlign = 'left';
+                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                                SPDataTemp = SPData;
+                                            }
+                                            SPData = "UNABLE TO PARSE ALTITUDE"
+                                            SPError = true;
+                                            setTimeout(() => {
+                                                if (SPError) {
+                                                    SPData = SPDataTemp;
+                                                    SPError = false;
+                                                }
+                                            }, 2500);
+                                        }
+                                    } catch (err) {
+                                        displayCTX.textAlign = 'left';
+                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
+                                            SPDataTemp = SPData;
+                                        }
+                                        SPData = "UNABLE TO PARSE ALTITUDE"
+                                        SPError = true;
+                                        setTimeout(() => {
+                                            if (SPError) {
+                                                SPData = SPDataTemp;
+                                                SPError = false;
+                                            }
+                                        }, 2500);
+                                    }
+
+                                } else {
+                                    displayCTX.textAlign = 'left';
+                                    if (SPData != "UNABLE TO LOCATE FIX") {
+                                        SPDataTemp = SPData;
+                                    }
+                                    SPData = "UNABLE TO LOCATE FIX"
+                                    SPError = true;
+                                    setTimeout(() => {
+                                        if (SPError) {
+                                            SPData = SPDataTemp;
+                                            SPError = false;
+                                        }
+                                    }, 2500);
+                                }
+                            }]]
                     }
                 }
             }
@@ -1216,7 +1762,6 @@ IFC.init(
                 console.log(data)
             })
         }, 5000);
-        //IFC.sendCommand({ "Command": "Commands.FlapsDown", "Parameters": [] });
 
     },
     function () {
@@ -1232,6 +1777,23 @@ let keyboardEnabled = false;
 
 window.addEventListener('keydown', (e) =>{
     if(keyboardEnabled){
-        SPData += (e.key).toUpperCase();
+        switch((e.key).toUpperCase()){
+            case "BACKSPACE":
+                player('click');
+                if (SPError == true) {
+                    SPError = false;
+                    SPData = "";
+                } else {
+                    SPData = SPData.slice(0, -1)
+                }
+                break;
+            case "META":
+            case "SHIFT":
+                break;
+            default:
+                player('click');
+                SPData += (e.key).toUpperCase();
+                break;
+        }
     }
 })
