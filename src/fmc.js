@@ -1,4 +1,5 @@
 //@ts-check
+const request = require('request');
 
 //Sounds
 // collection of sounds that are playing
@@ -149,6 +150,8 @@ function renderDisplay(){
         displayCTX.stroke();
         if(SPError == true){
             displayCTX.fillStyle = '#FF1111';
+        }else if(SPWarn == true){
+            displayCTX.fillStyle = '#FFA500';
         }else{
             displayCTX.fillStyle = '#FFFFFF';
         }
@@ -171,6 +174,7 @@ setInterval(renderDisplay, 250);
 let SPData = "";
 let SPDataTemp = '';
 let SPError = false;
+let SPWarn = false;
 
 const programData = {
     programs: {
@@ -347,6 +351,15 @@ const programData = {
                         //Value
                         displayCTX.font = "normal 35px Courier New";
                         displayCTX.fillText(infiniteFlightData.route.depRunway != "" ? infiniteFlightData.route.depRunway : "☐☐☐", 15, 265);
+                        displayCTX.textAlign = 'left';
+                    //DB Route
+                        //Header
+                        displayCTX.textAlign = 'right';
+                        displayCTX.font = "bold 25px Courier New";
+                        displayCTX.fillText("DB Route", 985, 215);
+                        //Value
+                        displayCTX.font = "normal 35px Courier New";
+                        displayCTX.fillText(infiniteFlightData.route.dbName != "" ? infiniteFlightData.route.dbName : "☐☐☐☐", 985, 265);
                         displayCTX.textAlign = 'left';
                 }else{
                     //Left Col Header
@@ -609,6 +622,64 @@ const programData = {
                             }else{
                                 SPData = infiniteFlightData.route.destination;
                                 infiniteFlightData.route.destination = "";
+                            }
+                        }], ['button2', () => {
+                            if (infiniteFlightData.route.dbName == "" || SPData != "") {
+                                infiniteFlightData.route.dbName = SPData;
+                                SPData = "";
+                                //Get Route
+                                SPData = "GETTING FPLN"
+                                SPWarn = true;
+                                const options = {
+                                    method: 'GET',
+                                    url: `https://raw.githubusercontent.com/Sam-Neale/IFFMC-Routes/master/routes/${infiniteFlightData.route.dbName}.json`
+                                };
+
+                                request(options, function (error, response, body) {
+                                    if (error) throw new Error(error);
+                                    if(response.statusCode == 200){
+                                        const route = JSON.parse(body);
+                                        route.fixArray.forEach(fix =>{
+                                            infiniteFlightData.route.fixes.push(fix);
+                                            infiniteFlightData.route.alts.set(fix, null);
+                                        })
+                                        SPData = "FPLN Loaded";
+                                        setTimeout(() => {
+                                            SPWarn = false;
+                                            SPData = "";
+                                        }, 2500);
+                                    }else if(response.statusCode == 404){
+                                        SPWarn = false;
+                                        SPError = true;
+                                        SPData = "Unable to find FPLN";
+                                        setTimeout(() => {
+                                            SPError = false;
+                                            SPData = "";
+                                        }, 2500);
+                                    }else{
+                                        SPWarn = false;
+                                        SPError = true;
+                                        SPData = "ERROR";
+                                        setTimeout(() => {
+                                            SPError = false;
+                                            SPData = "";
+                                        }, 2500);
+                                        console.error(body);
+                                    }
+                                    
+                                });
+
+                            } else {
+                                SPData = infiniteFlightData.route.dbName;
+                                infiniteFlightData.route.dbName = "";
+                                infiniteFlightData.route.fixes = [];
+                                infiniteFlightData.route.alts.clear();
+                                SPWarn = true;
+                                SPData = "FPLN Unloaded";
+                                setTimeout(() => {
+                                    SPWarn = false;
+                                    SPData = "";
+                                }, 2500);
                             }
                         }]]
                     }
@@ -1609,7 +1680,8 @@ let infiniteFlightData = {
         alts: new Map(),
         depRunway: "",
         origin: "",
-        destination: ""
+        destination: "",
+        dbName: ""
     }
 }
 
