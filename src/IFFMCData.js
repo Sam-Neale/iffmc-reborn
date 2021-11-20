@@ -152,7 +152,7 @@ function getSTARS(airport){
     });
 }
 
-async function resetData(){
+async function resetData(cb){
     alert("Resetting data...")
     var req = request(
         {
@@ -175,6 +175,7 @@ async function resetData(){
         zip.extractAllTo(IFFMCDir, /*overwrite*/true);
         cache.clear();
         alert("Data reset")
+        cb();
     });
 }
 

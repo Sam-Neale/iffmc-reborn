@@ -1185,9 +1185,11 @@ IFC.init(
     
 window.addEventListener('keydown', (e) => {
     if(e.ctrlKey && e.key == "."){
-        IFFMCData.newData();
-        programs.DEPARR.data.AData.airport = "";
-        programs.DEPARR.data.DData.airport = "";
+        IFFMCData.newData(() =>{
+            programs.DEPARR.data.AData.airport = "";
+            programs.DEPARR.data.DData.airport = "";
+        });
+        
     }else if (keyboardEnabled) {
         switch ((e.key).toUpperCase()) {
             case "BACKSPACE":
