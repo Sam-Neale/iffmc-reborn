@@ -1198,6 +1198,7 @@ window.addEventListener('keydown', (e) => {
             case "META":
             case "DEAD":
             case "ALT":
+            case "CONTROL":
             case "SHIFT":
                 break;
             case " ":
