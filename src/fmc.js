@@ -2,6 +2,12 @@
 //Requirements
 const request = require('request');
 const IFC = require('ifc-evolved');
+console.log("1")
+const IFFMCData = require("./IFFMCData.js");
+
+IFFMCData.SIDS.getAll("KLAX").then(result =>{
+    console.log(result)
+})
 
 //Globals
 let debug = true;
@@ -28,6 +34,17 @@ const SPStyle = {
  * @property {string} [fontSize]
  * @property {string} [fontFamily]
  * @property {string} [align]
+ */
+
+/**
+ * A sidebuttons side
+ * @typedef {Object} sideButtons
+ * @property {function} [button1]
+ * @property {function} [button2]
+ * @property {function} [button3]
+ * @property {function} [button4]
+ * @property {function} [button5]
+ * @property {function} [button6]
  */
 
 
@@ -90,6 +107,7 @@ async function warn(message, timeout) {
 }
 let buttonActions = {
     sideButtons:{
+        /** @type sideButtons */
         left: {
             button1: function(){
                 logConsole("Button Clicked")
@@ -110,6 +128,7 @@ let buttonActions = {
                 logConsole("Button Clicked")
             }
         },
+        /** @type sideButtons */
         right: {
             button1: function () {
                 logConsole("Button Clicked")
@@ -137,6 +156,10 @@ let buttonActions = {
     },
     RTE: function (){
         currentProgram = "RTE"
+        programs[currentProgram].onLoad();
+    },
+    DEPARR: function (){
+        currentProgram = "DEPARR"
         programs[currentProgram].onLoad();
     },
     NPage: function(){
@@ -363,15 +386,9 @@ let programs = {
                                     SPInput = "";
                                     currentErrorVar = true;
                                     warn('Getting FPLN');
-                                    const options = {
-                                        method: 'GET',
-                                        url: `https://raw.githubusercontent.com/Sam-Neale/IFFMC-Routes/master/routes/${IFData.route.DBRoute}.json`
-                                    };
-                                    request(options, function (errorNET, response, body) {
-                                        if (errorNET) throw new Error(errorNET);
-                                        if (response.statusCode == 200) {
-                                            const route = JSON.parse(body);
-                                            IFData.route.fixes = route.fixArray;
+                                    IFFMCData.getRoute(IFData.route.DBRoute).then(result =>{
+                                        if(result[0] == true){
+                                            IFData.route.fixes = result[1];
                                             currentErrorVar = false;
                                             warn("FPLN Loaded", 2500);
                                             let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
@@ -449,24 +466,25 @@ let programs = {
                                                 })
                                                 currentPages = program.data.pages.size - 1;
                                             }
-                                        } else if (response.statusCode == 404) {
-                                            currentErrorVar = false;
-                                            setTimeout(() => {
+                                        }else{
+                                            if(result[1] == 404){
+                                                currentErrorVar = false;
+                                                setTimeout(() => {
+                                                    error("FPLN UNAVILABLE", 2500);
+                                                    SPInput = IFData.route.DBRoute;
+                                                    IFData.route.DBRoute = "";
+                                                    IFData.route.fixes = [];
+                                                }, 100);
+                                            }else{
+                                                currentErrorVar = false;
                                                 error("FPLN UNAVILABLE", 2500);
                                                 SPInput = IFData.route.DBRoute;
                                                 IFData.route.DBRoute = "";
                                                 IFData.route.fixes = [];
-                                            }, 100);
-                                        } else {
-                                            currentErrorVar = false;
-                                            error("FPLN UNAVILABLE", 2500);
-                                            SPInput = IFData.route.DBRoute;
-                                            IFData.route.DBRoute = "";
-                                            IFData.route.fixes = [];
-                                            console.error(body);
+                                                console.error(result[2]);
+                                            }
                                         }
-
-                                    });
+                                    })
                                 }
                             }
                         }
@@ -496,7 +514,7 @@ let programs = {
                             button2: function () {
                                 let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
                                 let integer = 1;
-                                if (SPInput == "") {
+                                if (SPInput != "") {
                                     IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                     SPInput = "";
                                 } else {
@@ -569,7 +587,9 @@ let programs = {
                                 button2: function () {
                                     let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
                                     let integer = 1;
+                                    console.log(SPInput)
                                     if (SPInput != "") {
+                                        console.log("ADD")
                                         IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                         SPInput = "";
                                     } else {
@@ -652,11 +672,11 @@ let programs = {
             pageNum: 0,
             pages: new Map()
         },
-        constant: function (page) {
+        constant: function () {
             let program = programs.RTE;
             //Program title
             renderText("ROUTE", [500, 65], { fontSize: "50px", weight: "bold", align: "center" })
-            buttonActions.EXEC = function () {
+            buttonActions.EXEC = async function () {
                 if(currentProgram == "RTE"){
                     IFC.sendCommand({
                         "Command": "Commands.FlightPlan.Clear",
@@ -666,12 +686,33 @@ let programs = {
                         "Command": "Commands.FlightPlan.AddWaypoints",
                         "Parameters": [{ "Name": "WPT", "Value": IFData.route.origin}]
                     });*/
+                    const SID = await IFFMCData.SIDS.get(IFData.route.SID);
+                    const STAR = await IFFMCData.STARS.get(IFData.route.STAR);
+                    console.log(SID);
+                    console.log(STAR);
                     IFData.route.fixes.forEach(fix => {
                         let name = fix;
-                        IFC.sendCommand({
-                            "Command": "Commands.FlightPlan.AddWaypoints",
-                            "Parameters": [{ "Name": "WPT", "Value": name }]
-                        });
+                        if(name == "//SID" && SID){
+                            SID.waypoints.forEach(waypoint =>{
+                                IFC.sendCommand({
+                                    "Command": "Commands.FlightPlan.AddWaypoints",
+                                    "Parameters": [{ "Name": "WPT", "Value": waypoint }]
+                                });
+                            })
+                        }else if(name == "//STAR" && STAR){
+                            STAR.waypoints.forEach(waypoint => {
+                                IFC.sendCommand({
+                                    "Command": "Commands.FlightPlan.AddWaypoints",
+                                    "Parameters": [{ "Name": "WPT", "Value": waypoint }]
+                                });
+                            })
+                        }else{
+                            IFC.sendCommand({
+                                "Command": "Commands.FlightPlan.AddWaypoints",
+                                "Parameters": [{ "Name": "WPT", "Value": name }]
+                            });
+                        }
+                        
                     })
                     IFC.sendCommand({
                         "Command": "Commands.FlightPlan.AddWaypoints",
@@ -706,23 +747,303 @@ let programs = {
                 let integer = 0;
                 //Waypoint 1
                 renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
-                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], {fontSize: "35px", align: "right"})
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] == "//SID"||IFData.route.fixes[page.data.routePlus + integer] == "//STAR" ? "11FF11" : "FFFFFF" : "FFFFFF" })
                 integer = 1;
                 //Waypoint 2
                 renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
-                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] == "//SID"||IFData.route.fixes[page.data.routePlus + integer] == "//STAR" ? "11FF11" : "FFFFFF" : "FFFFFF"  })
                 integer = 2;
                 //Waypoint 3
                 renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
-                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] == "//SID"||IFData.route.fixes[page.data.routePlus + integer] == "//STAR" ? "11FF11" : "FFFFFF" : "FFFFFF"  })
                 integer = 3;
                 //Waypoint 4
                 renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
-                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] == "//SID"||IFData.route.fixes[page.data.routePlus + integer] == "//STAR" ? "11FF11" : "FFFFFF" : "FFFFFF"  })
                 integer = 4;
                 //Waypoint 5
                 renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
-                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] == "//SID"||IFData.route.fixes[page.data.routePlus + integer] == "//STAR" ? "11FF11" : "FFFFFF" : "FFFFFF" })
+            }
+            
+        }
+    },
+    DEPARR: {
+        onLoad: function () {
+            let program = programs.DEPARR;
+            program.data.step = "CORE";
+            buttonActions.MENU = function () {
+                programs.DEPARR.data.step = "CORE";
+            }
+            program.data.pages.set('page0', {
+                num: 0,
+                sbLayout: {
+                    left: {
+                        button1: function () {
+                            if(false){
+
+                            }
+                        }
+                    }
+                }
+            })
+        },
+        onPageChange: function (type){
+            let program = programs.DEPARR;
+            if (type == "UP") {
+                if (program.data.pages.has(`page${program.data.pageNum + 1}`)) {
+                    program.data.pageNum++;
+                } else {
+                    error("NO PAGE FOUND", 1000)
+                }
+            } else {
+                if (program.data.pages.has(`page${program.data.pageNum - 1}`)) {
+                    program.data.pageNum--;
+                } else {
+                    error("NO PAGE FOUND", 1000)
+                }
+            }
+        },
+        data: {
+            pageNum: 0,
+            pages: new Map(),
+            step: "CORE",
+            DData: {
+                airport: "",
+                data: null
+            },
+            AData: {
+                airport: "",
+                data: null
+            }
+        },
+        constant: async function () {
+            const program = programs.DEPARR;
+            //Program title
+            renderText("DEP/ARR", [500, 65], { fontSize: "50px", weight: "bold", align: "center" })
+            if(IFData.route.origin.code){
+                if(IFData.route.destination.code){
+                    let departureData;
+                    if(program.data.DData.airport != IFData.route.destination.code){
+                        program.data.DData.airport = IFData.route.destination.code;
+                        departureData = await IFFMCData.SIDS.getAll(IFData.route.origin.code);
+                        program.data.DData.data = departureData;
+                    }
+                    departureData = program.data.DData.data;
+                    let arrivalData;
+                    if (program.data.AData.airport != IFData.route.destination.code) {
+                        program.data.AData.airport = IFData.route.destination.code;
+                        arrivalData = await IFFMCData.STARS.getAll(IFData.route.destination.code);
+                        program.data.AData.data = arrivalData;
+                    }
+                    arrivalData = program.data.AData.data;
+                    if(departureData){
+                        if(arrivalData){
+                            if (program.data.step == "CORE") {
+                                //Left Column
+                                renderText("< DEPARTURE", [15, 160], { fontSize: "35px", align: "left" })
+                                //Center Column
+                                renderText(IFData.route.origin.code, [500, 160], { fontSize: "35px", align: "center" })
+                                renderText(IFData.route.destination.code, [500, 265], { fontSize: "35px", align: "center" })
+                                //Right Column
+                                //renderText("ARRIVAL >", [985, 160], { fontSize: "35px", align: "right" })
+                                renderText("ARRIVAL >", [985, 265], { fontSize: "35px", align: "right" })
+                                buttonActions.sideButtons = {
+                                    left: {
+                                        button1: function () {
+                                            program.data.step = "DEPARTURE"
+                                            program.data.airport = IFData.route.origin.code
+                                        }
+                                    },
+                                    right: {
+                                        button1: function () {
+                                            //program.data.step = "ARRIVAL"
+                                            //program.data.airport = IFData.route.origin.code
+                                        },
+                                        button2: function () {
+                                            program.data.step = "ARRIVAL"
+                                            program.data.airport = IFData.route.destination.code
+                                        }
+                                    }
+                                }
+                            }else if(program.data.step == "DEPARTURE"){
+                                let pagesRequired = Math.floor(departureData.size / 5) + 1;
+                                let currentPages = program.data.pages.size;
+                                console.log(pagesRequired, currentPages)
+                                while (pagesRequired > currentPages && program.data.step == "DEPARTURE"){
+                                    program.data.pages.set(`page${currentPages}`)
+                                    currentPages = program.data.pages.size;
+                                }
+                                //Columns
+                                renderText("RUNWAY", [15, 110], { fontSize: "25px", weight: "bold" });
+                                renderText("SID", [985, 110], { fontSize: "25px", weight: "bold", align: "right" });
+                                const currentPage = program.data.pages.get(`page${program.data.pageNum}`);
+                                const pagePlus = (program.data.pageNum * 5);
+                                let departureArray = [];
+                                departureData.forEach(SID =>{
+                                    departureArray.push(SID)
+                                })
+                                let integer = 0;
+                                let names = [];
+                                //Number 1
+                                if(departureArray[integer + pagePlus]){
+                                    //Runways
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF"});
+                                    //Name
+                                    names.push(departureArray[integer + pagePlus].fullName);
+                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button1 = function () {
+                                        IFData.route.SID = names[0];
+                                    }
+                                }  
+                                integer = 1;
+                                //Number 2
+                                if (departureArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(departureArray[integer + pagePlus].fullName);
+                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button2 = function () {
+                                        IFData.route.SID = names[1];
+                                    }
+                                }
+                                integer = 2;
+                                //Number 3
+                                if (departureArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(departureArray[integer + pagePlus].fullName);
+                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button3 = function () {
+                                        IFData.route.SID = names[2];
+                                    }
+                                }
+                                integer = 3;
+                                //Number 4
+                                if (departureArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(departureArray[integer + pagePlus].fullName);
+                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button4 = function () {
+                                        IFData.route.SID = names[3];
+                                    }
+                                }
+                                integer = 4;
+                                //Number 5
+                                if (departureArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(departureArray[integer + pagePlus].fullName);
+                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button5 = function () {
+                                        IFData.route.SID = names[4];
+                                    }
+                                }
+                            } else if (program.data.step == "ARRIVAL") {
+                                let pagesRequired = Math.floor(arrivalData.size / 5) + 1;
+                                let currentPages = program.data.pages.size;
+                                console.log(pagesRequired, currentPages)
+                                while (pagesRequired > currentPages && program.data.step == "ARRIVAL") {
+                                    program.data.pages.set(`page${currentPages}`)
+                                    currentPages = program.data.pages.size;
+                                }
+                                //Columns
+                                renderText("RUNWAY", [15, 110], { fontSize: "25px", weight: "bold" });
+                                renderText("STAR", [985, 110], { fontSize: "25px", weight: "bold", align: "right" });
+                                const currentPage = program.data.pages.get(`page${program.data.pageNum}`);
+                                const pagePlus = (program.data.pageNum * 5);
+                                let arrivalArray = [];
+                                arrivalData.forEach(STAR => {
+                                    arrivalArray.push(STAR)
+                                })
+                                let integer = 0;
+                                let names = [];
+                                //Number 1
+                                if (arrivalArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(arrivalArray[integer + pagePlus].fullName);
+                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button1 = function () {
+                                        IFData.route.STAR = names[0];
+                                    }
+                                }
+                                integer = 1;
+                                //Number 2
+                                if (arrivalArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(arrivalArray[integer + pagePlus].fullName);
+                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button2 = function () {
+                                        IFData.route.STAR = names[1];
+                                    }
+                                }
+                                integer = 2;
+                                //Number 3
+                                if (arrivalArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(arrivalArray[integer + pagePlus].fullName);
+                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button3 = function () {
+                                        IFData.route.STAR = names[2];
+                                    }
+                                }
+                                integer = 3;
+                                //Number 4
+                                if (arrivalArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(arrivalArray[integer + pagePlus].fullName);
+                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button4 = function () {
+                                        IFData.route.STAR = names[3];
+                                    }
+                                }
+                                integer = 4;
+                                //Number 5
+                                if (arrivalArray[integer + pagePlus]) {
+                                    //Runways
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Name
+                                    names.push(arrivalArray[integer + pagePlus].fullName);
+                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    //Config
+                                    buttonActions.sideButtons.right.button5 = function () {
+                                        IFData.route.STAR = names[4];
+                                    }
+                                }
+                            }
+                        }else{
+                            error("NO ARR DATA", 5000);
+                        }
+                    }else{
+                        error("NO DEP DATA", 5000);
+                    }
+                }else{
+                    error("MISSING ARR AIRPORT", 5000);
+                }
+            }else{
+                error("MISSING DEP AIRPORT", 5000);
             }
             
         }
@@ -741,6 +1062,8 @@ const IFData = {
         livery: ""
     },
     route: {
+        SID: "",
+        STAR: "",
         fixes: [],
         origin: {
             code: "",
@@ -861,7 +1184,9 @@ IFC.init(
     
     
 window.addEventListener('keydown', (e) => {
-    if (keyboardEnabled) {
+    if(e.ctrlKey && e.key == "."){
+        IFFMCData.newData();
+    }else if (keyboardEnabled) {
         switch ((e.key).toUpperCase()) {
             case "BACKSPACE":
                 buttonClick('char', "DEL");

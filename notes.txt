@@ -3,3 +3,6 @@ Element 1 [0]
 Is the label
 Element 2 [1]
 Is the identifier
+Control . to clear cache
+//SID to add to FPLN
+//STAR to add to FPLN
