@@ -1,13 +1,157 @@
 //@ts-check
+//Requirements
 const request = require('request');
+const IFC = require('ifc-evolved');
 
-//Sounds
-// collection of sounds that are playing
+//Globals
+let debug = true;
+let SPInput = "";
+let SPState = "AI";
+let SPComp = "";
+let currentErrorVar = false;
+let keyboardEnabled = false;
+
+/*@type {style}*/
+const SPStyle = {
+    color: "FFFFFF",
+    weight: "normal",
+    fontSize: "30px",
+    fontFamily: "Courier New",
+    align: "left"
+}
+
+/**
+ * A style
+ * @typedef {Object} style
+ * @property {string} [color]
+ * @property {string} [weight]
+ * @property {string} [fontSize]
+ * @property {string} [fontFamily]
+ * @property {string} [align]
+ */
+
+
+async function logConsole(message) {
+    if(debug){
+        console.log(message);
+    }
+}
+async function errorConsole(message) {
+    if (debug) {
+        console.error(message);
+    }
+}
+async function warnConsole(message) {
+    if (debug) {
+        console.warn(message);
+    }
+}
+async function error(message, timeout){
+    if(timeout){
+        SPState = "CE";
+        SPComp = message;
+        setTimeout(() => {
+            SPState = "AI";
+            SPComp = "";
+        }, timeout);
+    }else if(currentErrorVar){
+        let checker = setInterval(() => {
+            if(currentErrorVar == true){
+                SPState = "CE";
+                SPComp = message;
+            }else{
+                SPState = "AI";
+                SPComp = "";
+                clearInterval(checker);
+            }
+        }, 100);
+    }
+}
+async function warn(message, timeout) {
+    if (timeout) {
+        SPState = "CW";
+        SPComp = message;
+        setTimeout(() => {
+            SPState = "AI";
+            SPComp = "";
+        }, timeout);
+    } else if (currentErrorVar) {
+        let checker = setInterval(() => {
+            if (currentErrorVar == true) {
+                SPState = "CW";
+                SPComp = message;
+            } else {
+                SPState = "AI";
+                SPComp = "";
+                clearInterval(checker);
+            }
+        }, 100);
+    }
+}
+let buttonActions = {
+    sideButtons:{
+        left: {
+            button1: function(){
+                logConsole("Button Clicked")
+            },
+            button2: function () {
+                logConsole("Button Clicked")
+            },
+            button3: function () {
+                logConsole("Button Clicked")
+            },
+            button4: function () {
+                logConsole("Button Clicked")
+            },
+            button5: function () {
+                logConsole("Button Clicked")
+            },
+            button6: function () {
+                logConsole("Button Clicked")
+            }
+        },
+        right: {
+            button1: function () {
+                logConsole("Button Clicked")
+            },
+            button2: function () {
+                logConsole("Button Clicked")
+            },
+            button3: function () {
+                logConsole("Button Clicked")
+            },
+            button4: function () {
+                logConsole("Button Clicked")
+            },
+            button5: function () {
+                logConsole("Button Clicked")
+            },
+            button6: function () {
+                logConsole("Button Clicked")
+            }
+        }
+    },
+    INITREF: function () {
+        currentProgram = "INIT_REF"
+        programs[currentProgram].onLoad();
+    },
+    RTE: function (){
+        currentProgram = "RTE"
+        programs[currentProgram].onLoad();
+    },
+    NPage: function(){
+        let program = programs[currentProgram];
+        program.onPageChange("UP");
+    },
+    PPage: function () {
+        let program = programs[currentProgram];
+        program.onPageChange("DOWN");
+    }
+}
+
+//Audio
 var playing = {};
-// collection of sounds
-var sounds = { click: "click.mp3"};
-
-// function that is used to play sounds
+var sounds = { click: "click.mp3" };
 function player(x) {
     var a, b;
     b = new Date();
@@ -18,1817 +162,605 @@ function player(x) {
     playing[a].play();
 }
 
-function buttonClick(type, value){
-    //Play Sound
+//Buttons
+async function buttonClick(type, value){
+    //Play sound
     player('click');
-    console.log(type);
-    console.log(value);
-    if(type == "function"){
-        let program = programData.programs[programData.programs.current];
-        let page = program.pages[program.pages.current];
-        sideButtons.reset();
-        switch(value){
-            case "NPage":
-                if(page.nPage != null){
-                    program.pages.current = page.nPage[1];
-                }else{
-                    SPDataTemp = SPData;
-                    SPData = "NO PAGE"
-                    SPError = true;
-                    setTimeout(() => {
-                        if(SPError){
-                            SPData = SPDataTemp;
-                            SPError = false;
-                        }
-                    }, 2500);
-                }
-                
-                break;
-            case "PPage":
-                if (page.pPage != null) {
-                    program.pages.current = page.pPage[1];
-                } else {
-                    SPDataTemp = SPData;
-                    SPData = "NO PAGE"
-                    SPError = true;
-                    setTimeout(() => {
-                        if (SPError) {
-                            SPData = SPDataTemp;
-                            SPError = false;
-                        }
-                    }, 2500);
-                }
-                break;
-            case "INITREF":
-                programData.programs.current = "INIT_REF";
-                break;
-            case "RTE":
-                programData.programs.current = "RTE";
-                break;
-            case "LEGS":
-                programData.programs.current = "LEGS";
-                break;
-            case "DEPARR":
-                programData.programs.current = "DEPARR";
-                break;
-            case "EXEC":
-                buttonActions.exec.action();
-                break;
-            default:
-                console.error("Unknown Value");
-                break;
-        }
-    }else if(type == "function-left"){
-        sideButtons.left[`button${value + 1}`].func();
-    }else if (type == "function-right"){
-        sideButtons.right[`button${value + 1}`].func();
-    }else if(type == "num"){
-        if(value == "INVERT"){
-
-        }else{
-            SPData += value;
-        }
-    }else if(type == "char"){
-        displayCTX.textAlign = 'left';
-        if(value == "DEL"){
-            if (SPError == true) {
-                SPError = false;
-                SPData = "";
+    logConsole([type,value]);
+    switch(type){
+        case "function":
+            if (buttonActions[value]){
+                buttonActions[value]();
             }else{
-                SPData = SPData.slice(0, -1)
+                error("FUNCTION NOT FOUND", 2500)
             }
-        }else if(value == "CLR"){
-            if (SPError == true) {
-                SPError = false;
+            
+            break;
+        case "function-left":
+            if (buttonActions.sideButtons.left[`button${value + 1}`]){
+                buttonActions.sideButtons.left[`button${value + 1}`]();
             }
-            SPData = "";
-        }else{
-            if(SPError == true){
-                SPError = false;    
-                SPData = "";
+            break;
+        case "function-right":
+            if (buttonActions.sideButtons.right[`button${value + 1}`]) {
+                buttonActions.sideButtons.right[`button${value + 1}`]();
             }
-            SPData += value;
-        }
-    }else{
-        console.error("Unknown type");
+            break;
+        case "num":
+            SPState = "AI";
+            SPComp = "";
+            currentErrorVar = false;
+            if(value == "INVERT"){
+                let numbers = parseInt(SPInput);
+                console.log(numbers)
+                console.log(numbers != NaN)
+                if(isNaN(numbers) == false){
+                    SPInput = (numbers * -1).toString();
+                }else{
+                    warn("Not a number", 1000)
+                }
+            }else{
+                SPInput += value;
+            }
+            break;
+        case "char":
+            SPState = "AI";
+            SPComp = "";
+            currentErrorVar = false;
+            if(value == "DEL"){
+                SPInput = SPInput.slice(0, -1);
+            }else if(value == "CLR"){
+                SPInput = "";
+            }else if(value == "SP"){
+                SPInput += " ";
+            }else{
+                SPInput += value;
+            }
+            break;
+        default:
+            warnConsole(["Missing type declaration", type]);
+            break;
     }
 }
 
-const displayObject = document.getElementById('screen');
-//@ts-ignore
-const displayCTX = displayObject.getContext('2d');
-
-let buttonActions = {
-    exec: {
-        program: 'INIT',
-        action: function(){
-            console.log("Executed")
-        }
-    }
-}
-
-//@ts-ignore
-displayObject.width = 1000;
-//@ts-ignore
-displayObject.height = 774;
-
-//1.312042553191489
-
-function renderDisplay(){
-    //@ts-ignore
-    displayCTX.clearRect(0, 0, displayObject.width, displayObject.height);
-    displayCTX.fillStyle = '#FFFFFF';
-    displayCTX.font = "bold 30px Courier New"
-    displayCTX.strokeStyle = '#FFFFFF';
-    displayCTX.lineWidth = 5;
-    //Scratch Pad
-        //Line
-        displayCTX.beginPath();
-        displayCTX.setLineDash([15]);
-        displayCTX.moveTo(0,650);
-        displayCTX.lineTo(1000, 650);
-        displayCTX.stroke();
-        if(SPError == true){
-            displayCTX.fillStyle = '#FF1111';
-        }else if(SPWarn == true){
-            displayCTX.fillStyle = '#FFA500';
-        }else{
-            displayCTX.fillStyle = '#FFFFFF';
-        }
-        displayCTX.fillText(SPData, 20, 740);
-        displayCTX.fillStyle = '#FFFFFF';
-        
-    //Pages
-    let program = programData.programs[programData.programs.current];
-    let page = program.pages[program.pages.current];
-    let maxPages = program.pages.max;
-    displayCTX.textAlign = 'right';
-    displayCTX.fillText(`(${page.order}/${maxPages})`, 980, 40);
-    displayCTX.textAlign = 'left';
-    programData.renderProgram();
-        
-}
-
-setInterval(renderDisplay, 250);
-
-let SPData = "";
-let SPDataTemp = '';
-let SPError = false;
-let SPWarn = false;
-
-const programData = {
-    programs: {
-        current: 'INIT_REF',
-        INIT_REF:{
-            render: () =>{
-                //Page Title
-                displayCTX.textAlign = 'center';
-                displayCTX.font = "bold 50px Courier New"
-                displayCTX.fillText("IDENT", 500, 65);
-                //IF Status
-                if(infiniteFlightData.connected == true){
-                    //Header
-                    displayCTX.textAlign = 'left';
-                    displayCTX.font = "bold 25px Courier New";
-                    displayCTX.fillText("Connection", 15, 110);
-                    //Status
-                    displayCTX.font = "normal 35px Courier New";
-                    displayCTX.fillText("Connected", 15, 160);
-                    //Version
-                        displayCTX.textAlign = 'right';
+//Programs
+let currentProgram = "INIT_REF";
+let programs = {
+    INIT_REF: {
+        onLoad: function () {
+            programs.INIT_REF.data.pages.set('page0', {
+                num: 0,
+                data: {}
+            })
+            //Set Sidebuttons
+            buttonActions.sideButtons.right.button3 = function () {
+                if (keyboardEnabled == true) {
+                    keyboardEnabled = false;
+                } else {
+                    keyboardEnabled = true;
+                }
+            }
+        },
+        onPageChange: function (type) {
+            let program = programs.INIT_REF;
+            if (type == "UP") {
+                if (program.data.pages.has(`page${program.data.pageNum + 1}`)) {
+                    program.data.pageNum++;
+                } else {
+                    error("NO PAGE FOUND", 1000)
+                }
+            } else {
+                if (program.data.pages.has(`page${program.data.pageNum - 1}`)) {
+                    program.data.pageNum--;
+                } else {
+                    error("NO PAGE FOUND", 1000)
+                }
+            }
+        },
+        data: {
+            pageNum: 0,
+            pages: new Map()
+        },
+        constant: function (page) {
+            //Program title
+            renderText("IDENT", [500, 65], {fontSize: "50px", weight: "bold", align: "center"})
+            //Data
+            if(IFData.connected == true){
+                    //Connection Status
                         //Header
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("IF Version", 985, 110);
+                        renderText("Connection", [15, 110], {fontSize: "25px", weight: "bold"})
                         //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.version, 985, 160);
+                        renderText("Connected", [15, 160], {fontSize: "35px"})
+                    //Version
+                        //Header
+                        renderText("Version", [985, 110], {fontSize: "25px", weight: "bold", align: "right"});
+                        //Value
+                        renderText(IFData.version, [985, 160], {fontSize: "35px", align: "right"});
                     //Device
                         //Header
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("Device", 985, 215);
+                        renderText("Device", [985, 215], {fontSize: "25px", weight: "bold", align: "right"});
                         //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.device, 985, 265);
-                    displayCTX.textAlign = 'left';
+                        renderText(IFData.device, [985, 265], {fontSize: "35px", align: "right"});
+                    let aircraftExists = IFData.vehicle.model != "Unknown";
                     //Aircraft
                         //Header
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("Aircraft", 15, 215);
+                        renderText("Aircraft", [15, 215], {fontSize: "25px", weight: "bold"})
                         //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.vehicle.aircraft, 15, 265);
+                        renderText(IFData.vehicle.model, [15, 265], {fontSize: "35px", color: aircraftExists ? "FFFFFF" : "FFA500"})
                     //Livery
                         //Header
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("Livery", 15, 320);
+                        renderText("Livery", [15, 320], {fontSize: "25px", weight: "bold"})
                         //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.vehicle.livery, 15, 370);
+                        renderText(IFData.vehicle.livery, [15, 370], { fontSize: "35px", color: aircraftExists ? "FFFFFF" : "FFA500"})
+                    //Reset FMC
+                        if(!aircraftExists){
+                            displayCTX.font = "bold 35px Courier New";
+                            displayCTX.fillText("Restart FMC", 15, 475);
+                            buttonActions.sideButtons.left.button4 = function () { window.location.reload() };
+                        }
+                        
                     //Keyboard
-                        displayCTX.textAlign = 'right';
                         //Header
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("Keyboard", 985, 320);
+                        renderText("Keyboard", [985, 320], {fontSize: "25px", weight: "bold", align: "right"});
                         //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(keyboardEnabled ? "Enabled" : "Disabled", 985, 370);
-                    displayCTX.textAlign = 'left';
-                }else if(infiniteFlightData.connected == false){
-                    //Header
-                    displayCTX.textAlign = 'left';
-                    displayCTX.font = "bold 25px Courier New";
-                    displayCTX.fillText("Connection", 15, 110);
-                    //Status
-                    displayCTX.font = "normal 35px Courier New";
-                    displayCTX.fillText("Looking", 15, 160);
+                        renderText(keyboardEnabled ? "Enabled" : "Disabled", [985, 370], {fontSize: "35px", align: "right"});
+                }else if(IFData.connected == false){
+                    //Connection Status
+                        //Header
+                        renderText("Connection", [15, 110], {fontSize: "25px", weight: "bold"})
+                        //Value
+                        renderText("Looking", [15, 160], {fontSize: "35px"})
                 }else{
-                    //Header
-                    displayCTX.textAlign = 'left';
-                    displayCTX.font = "bold 25px Courier New";
-                    displayCTX.fillText("Connection", 15, 110);
-                    //Status
-                    displayCTX.font = "normal 35px Courier New";
-                    displayCTX.fillText("Failed", 15, 160);
+                    //Connection Status
+                        //Header
+                        renderText("Connection", [15, 110], {fontSize: "25px", weight: "bold"})
+                        //Value
+                        renderText("Failed", [15, 160], {fontSize: "35px", color: "FF1111"})
                     //RELOAD
                     displayCTX.font = "bold 35px Courier New";
                     displayCTX.fillText("Restart FMC", 15, 265);
-                    sideButtons.left.button2.func = function () {
-                        window.location.reload();
-                    }
+                    buttonActions.sideButtons.left.button2 = function () {window.location.reload()};
                 }
-
-                //Buttons
-                programData.programs.INIT_REF.pages.page1.sideButtons.right.forEach(button => {
-                    let index = button[0];
-                    let func = button[1];
-                    sideButtons.right[index].func = func;
-                })
-            },
-            pages: {
-                current: 'page1',
-                max: 1,
-                page1: {
-                    order: 1,
-                    nPage: null,
-                    pPage: null,
-                    sideButtons: {
-                        right: [['button3', () =>{
-                            if(keyboardEnabled == true){
-                                keyboardEnabled = false;
-                            }else{
-                                keyboardEnabled = true;
-                            }
-                        }]]
-                    }
-                }
-            }
-        },
-        RTE: {
-            render: () => {
-                //Program Title
-                displayCTX.textAlign = 'center';
-                displayCTX.font = "bold 50px Courier New"
-                displayCTX.fillText("ROUTE", 500, 65);
-
-                //Execute
-                if(buttonActions.exec.program != "RTE"){
-                    buttonActions.exec.program = "RTE";
-                    buttonActions.exec.action = function () {
-                        IFC.sendCommand({
-                            "Command": "Commands.FlightPlan.Clear",
-                            "Parameters": []
-                        })
-                        /*IFC.sendCommand({
-                            "Command": "Commands.FlightPlan.AddWaypoints",
-                            "Parameters": [{ "Name": "WPT", "Value": infiniteFlightData.route.origin}]
-                        });*/
-                        infiniteFlightData.route.fixes.forEach(fix => {
-                            let name = fix;
-                            if (infiniteFlightData.route.alts.has(fix)) {
-                                let AltVal = infiniteFlightData.route.alts.get(fix);
-                                if (AltVal) {
-                                    name += `@FL${AltVal.toString()}`;
-                                }
-                            }
-                            console.log(name);
-                            IFC.sendCommand({
-                                "Command": "Commands.FlightPlan.AddWaypoints",
-                                "Parameters": [{ "Name": "WPT", "Value": name }]
-                            });
-                        })
-                        IFC.sendCommand({
-                            "Command": "Commands.FlightPlan.AddWaypoints",
-                            "Parameters": [{ "Name": "WPT", "Value": infiniteFlightData.route.destination }]
-                        });
-                    }
-                }
-
-                let pageNum = programData.programs.RTE.pages.current;
-
-                if (pageNum == "page1"){
-                    //Origin
-                        //Header
-                        displayCTX.textAlign = 'left';
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("ORIGIN", 15, 110);
-                        //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.route.origin != "" ? infiniteFlightData.route.origin : "☐☐☐☐", 15, 160);
-                    //Dest
-                        //Header
-                        displayCTX.textAlign = 'right';
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("DEST", 985, 110);
-                        //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.route.destination != "" ? infiniteFlightData.route.destination : "☐☐☐☐", 985, 160);
-                        displayCTX.textAlign = 'left';
-                    //Runway
-                        //Header
-                        displayCTX.textAlign = 'left';
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("RUNWAY", 15, 215);
-                        //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.route.depRunway != "" ? infiniteFlightData.route.depRunway : "☐☐☐", 15, 265);
-                        displayCTX.textAlign = 'left';
-                    //DB Route
-                        //Header
-                        displayCTX.textAlign = 'right';
-                        displayCTX.font = "bold 25px Courier New";
-                        displayCTX.fillText("DB Route", 985, 215);
-                        //Value
-                        displayCTX.font = "normal 35px Courier New";
-                        displayCTX.fillText(infiniteFlightData.route.dbName != "" ? infiniteFlightData.route.dbName : "☐☐☐☐", 985, 265);
-                        displayCTX.textAlign = 'left';
-                }else{
-                    //Left Col Header
-                    displayCTX.textAlign = 'left';
-                    displayCTX.font = "bold 30px Courier New";
-                    displayCTX.fillText("VIA", 15, 105);
-                    //Right Col Header
-                    displayCTX.textAlign = 'right';
-                    displayCTX.font = "bold 30px Courier New";
-                    displayCTX.fillText("TO", 985, 105);
-                    
-                    //Get current page
-                    let program = programData.programs[programData.programs.current];
-                    let page = program.pages[program.pages.current];
-                    //Get Fix Plus
-                    let fixPlus = page.custom.fixPlus;
-                    //Calculate next page required
-                    if (page.nPage == null && infiniteFlightData.route.fixes[page.custom.fixPlus + 4]){
-                        let nPageNum = Object.keys(program.pages).length - 1;
-                        page.nPage = ['Fixes Cont.', `page${nPageNum}`];
-                        program.pages.max++;
-                        program.pages[`page${nPageNum}`] = {
-                            nPage: null,
-                            pPage: ["Fixes", `page${(nPageNum-1).toString()}`],
-                            order: nPageNum,
-                            custom: {
-                                fixPlus: (nPageNum * 5) - 10
-                            },
-                            sideButtons:{
-                                left: [
-                                    ['button1', () => {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "AIRWAYS NOT ALLOWED") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "AIRWAYS NOT ALLOWED"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }],
-                                    ['button2', () => {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "AIRWAYS NOT ALLOWED") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "AIRWAYS NOT ALLOWED"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }],
-                                    ['button3', () => {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "AIRWAYS NOT ALLOWED") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "AIRWAYS NOT ALLOWED"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }],
-                                    ['button4', () => {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "AIRWAYS NOT ALLOWED") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "AIRWAYS NOT ALLOWED"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }],
-                                    ['button5', () => {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "AIRWAYS NOT ALLOWED") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "AIRWAYS NOT ALLOWED"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }],
-                                    ['button6', () => {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "AIRWAYS NOT ALLOWED") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "AIRWAYS NOT ALLOWED"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }]
-                                ],
-                                right: [
-                                    ['button1', () => {
-                                        let program = programData.programs[programData.programs.current];
-                                        let page = program.pages[program.pages.current];
-                                        if (SPData != "") {
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = SPData;
-                                            infiniteFlightData.route.alts.set(SPData, null);
-                                            SPData = "";
-                                        } else {
-                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + 0];
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = "";
-                                        }
-                                    }],
-                                    ['button2', () => {
-                                        let program = programData.programs[programData.programs.current];
-                                        let page = program.pages[program.pages.current];
-                                        let btnNum = 1;
-                                        if (SPData != "") {
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                            infiniteFlightData.route.alts.set(SPData, null);
-                                            SPData = "";
-                                        } else {
-                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                        }
-                                    }],
-                                    ['button3', () => {
-                                        let program = programData.programs[programData.programs.current];
-                                        let page = program.pages[program.pages.current];
-                                        let btnNum = 2;
-                                        if (SPData != "") {
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                            infiniteFlightData.route.alts.set(SPData, null);
-                                            SPData = "";
-                                        } else {
-                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                        }
-                                    }],
-                                    ['button4', () => {
-                                        let program = programData.programs[programData.programs.current];
-                                        let page = program.pages[program.pages.current];
-                                        let btnNum = 3;
-                                        if (SPData != "") {
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                            infiniteFlightData.route.alts.set(SPData, null);
-                                            SPData = "";
-                                        } else {
-                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                        }
-                                    }],
-                                    ['button5', () => {
-                                        let program = programData.programs[programData.programs.current];
-                                        let page = program.pages[program.pages.current];
-                                        let btnNum = 4;
-                                        if (SPData != "") {
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                            infiniteFlightData.route.alts.set(SPData, null);
-                                            SPData = "";
-                                        } else {
-                                            SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                            infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                        }
-                                    }]
-                                ]
-                            }
-                        }
-                    }
-                    //Render Values
-                    displayCTX.font = "normal 35px Courier New";
-                    let plus = 0;
-                    //Num 1
-                    displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 160);
-                    displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 160);
-                    //Num 2
-                    plus = 1;
-                    displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 265);
-                    displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 265);
-                    //Num 3
-                    plus = 2;
-                    displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 370);
-                    displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 370);
-                    //Num 4
-                    plus = 3;
-                    displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 475);
-                    displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 475);
-                    //Num 5
-                    plus = 4;
-                    displayCTX.textAlign = 'right';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? infiniteFlightData.route.fixes[page.custom.fixPlus + plus] : "☐☐☐☐☐", 985, 580);
-                    displayCTX.textAlign = 'left';
-                    displayCTX.fillText(infiniteFlightData.route.fixes[page.custom.fixPlus + plus] ? "DIRECT" : "", 15, 580);
-                    displayCTX.textAlign = 'left';
-                }
-                //Buttons
-                programData.programs.RTE.pages[pageNum].sideButtons.left.forEach(button =>{
-                    let index = button[0];
-                    let func = button[1];
-                    sideButtons.left[index].func = func;
-                })
-                programData.programs.RTE.pages[pageNum].sideButtons.right.forEach(button => {
-                    let index = button[0];
-                    let func = button[1];
-                    sideButtons.right[index].func = func;
-                })
-            },
-            pages: {
-                current: 'page1',
-                max: 2,
-                page1: {
-                    nPage: ['Fixes', 'page2'],
-                    pPage: null,
-                    order: 1,
-                    sideButtons:{
-                        left: [['button1', () =>{
-                            if(infiniteFlightData.route.origin == "" || SPData != ""){
-                                infiniteFlightData.route.origin = SPData;
-                                SPData = "";
-                            }else{
-                                SPData = infiniteFlightData.route.origin;
-                                infiniteFlightData.route.origin = "";
-                            }
-                        }], ['button2', () => {
-                            if (infiniteFlightData.route.depRunway == "" || SPData != "") {
-                                infiniteFlightData.route.depRunway = SPData;
-                                SPData = "";
-                            } else {
-                                SPData = infiniteFlightData.route.depRunway;
-                                infiniteFlightData.route.depRunway = "";
-                            }
-                        }]],
-                        right: [['button1', () =>{
-                            if(infiniteFlightData.route.destination == "" || SPData != ""){
-                                infiniteFlightData.route.destination = SPData;
-                                SPData = "";
-                            }else{
-                                SPData = infiniteFlightData.route.destination;
-                                infiniteFlightData.route.destination = "";
-                            }
-                        }], ['button2', () => {
-                            if (infiniteFlightData.route.dbName == "" || SPData != "") {
-                                infiniteFlightData.route.dbName = SPData;
-                                SPData = "";
-                                //Get Route
-                                SPData = "GETTING FPLN"
-                                SPWarn = true;
-                                const options = {
-                                    method: 'GET',
-                                    url: `https://raw.githubusercontent.com/Sam-Neale/IFFMC-Routes/master/routes/${infiniteFlightData.route.dbName}.json`
-                                };
-
-                                request(options, function (error, response, body) {
-                                    if (error) throw new Error(error);
-                                    if(response.statusCode == 200){
-                                        const route = JSON.parse(body);
-                                        route.fixArray.forEach(fix =>{
-                                            infiniteFlightData.route.fixes.push(fix);
-                                            infiniteFlightData.route.alts.set(fix, null);
-                                        })
-                                        SPData = "FPLN Loaded";
-                                        setTimeout(() => {
-                                            SPWarn = false;
-                                            SPData = "";
-                                        }, 2500);
-                                    }else if(response.statusCode == 404){
-                                        SPWarn = false;
-                                        SPError = true;
-                                        SPData = "Unable to find FPLN";
-                                        setTimeout(() => {
-                                            SPError = false;
-                                            SPData = "";
-                                        }, 2500);
-                                    }else{
-                                        SPWarn = false;
-                                        SPError = true;
-                                        SPData = "ERROR";
-                                        setTimeout(() => {
-                                            SPError = false;
-                                            SPData = "";
-                                        }, 2500);
-                                        console.error(body);
-                                    }
-                                    
-                                });
-
-                            } else {
-                                SPData = infiniteFlightData.route.dbName;
-                                infiniteFlightData.route.dbName = "";
-                                infiniteFlightData.route.fixes = [];
-                                infiniteFlightData.route.alts.clear();
-                                SPWarn = true;
-                                SPData = "FPLN Unloaded";
-                                setTimeout(() => {
-                                    SPWarn = false;
-                                    SPData = "";
-                                }, 2500);
-                            }
-                        }]]
-                    }
-                },
-                page2: {
-                    nPage: null,
-                    pPage: ["Core", "page1"],
-                    order: 2,
-                    custom:{
-                        fixPlus: 0,
-                    },
-                    sideButtons: {
-                        left: [
-                            ['button1', () => {
-                                displayCTX.textAlign = 'left';
-                                if (SPData != "AIRWAYS NOT ALLOWED") {
-                                    SPDataTemp = SPData;
-                                }
-                                SPData = "AIRWAYS NOT ALLOWED"
-                                SPError = true;
-                                setTimeout(() => {
-                                    if (SPError) {
-                                        SPData = SPDataTemp;
-                                        SPError = false;
-                                    }
-                                }, 2500);
-                            }],
-                            ['button2', () => {
-                                displayCTX.textAlign = 'left';
-                                if (SPData != "AIRWAYS NOT ALLOWED") {
-                                    SPDataTemp = SPData;
-                                }
-                                SPData = "AIRWAYS NOT ALLOWED"
-                                SPError = true;
-                                setTimeout(() => {
-                                    if (SPError) {
-                                        SPData = SPDataTemp;
-                                        SPError = false;
-                                    }
-                                }, 2500);
-                            }],
-                            ['button3', () => {
-                                displayCTX.textAlign = 'left';
-                                if (SPData != "AIRWAYS NOT ALLOWED") {
-                                    SPDataTemp = SPData;
-                                }
-                                SPData = "AIRWAYS NOT ALLOWED"
-                                SPError = true;
-                                setTimeout(() => {
-                                    if (SPError) {
-                                        SPData = SPDataTemp;
-                                        SPError = false;
-                                    }
-                                }, 2500);
-                            }],
-                            ['button4', () => {
-                                displayCTX.textAlign = 'left';
-                                if (SPData != "AIRWAYS NOT ALLOWED") {
-                                    SPDataTemp = SPData;
-                                }
-                                SPData = "AIRWAYS NOT ALLOWED"
-                                SPError = true;
-                                setTimeout(() => {
-                                    if (SPError) {
-                                        SPData = SPDataTemp;
-                                        SPError = false;
-                                    }
-                                }, 2500);
-                            }],
-                            ['button5', () => {
-                                displayCTX.textAlign = 'left';
-                                if (SPData != "AIRWAYS NOT ALLOWED") {
-                                    SPDataTemp = SPData;
-                                }
-                                SPData = "AIRWAYS NOT ALLOWED"
-                                SPError = true;
-                                setTimeout(() => {
-                                    if (SPError) {
-                                        SPData = SPDataTemp;
-                                        SPError = false;
-                                    }
-                                }, 2500);
-                            }],
-                            ['button6', () => {
-                                displayCTX.textAlign = 'left';
-                                if (SPData != "AIRWAYS NOT ALLOWED") {
-                                    SPDataTemp = SPData;
-                                }
-                                SPData = "AIRWAYS NOT ALLOWED"
-                                SPError = true;
-                                setTimeout(() => {
-                                    if (SPError) {
-                                        SPData = SPDataTemp;
-                                        SPError = false;
-                                    }
-                                }, 2500);
-                            }]
-                        ],
-                        right: [
-                            ['button1', () => {
-                                let program = programData.programs[programData.programs.current];
-                                let page = program.pages[program.pages.current];
-                                if (SPData != "") {
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = SPData;
-                                    infiniteFlightData.route.alts.set(SPData, null);
-                                    SPData = "";
-                                } else {
-                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + 0];
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + 0] = "";
-                                }
-                            }],
-                            ['button2', () => {
-                                let program = programData.programs[programData.programs.current];
-                                let page = program.pages[program.pages.current];
-                                let btnNum = 1;
-                                if (SPData != "") {
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                    infiniteFlightData.route.alts.set(SPData, null);
-                                    SPData = "";
-                                } else {
-                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                }
-                            }],
-                            ['button3', () => {
-                                let program = programData.programs[programData.programs.current];
-                                let page = program.pages[program.pages.current];
-                                let btnNum = 2;
-                                if (SPData != "") {
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                    infiniteFlightData.route.alts.set(SPData, null);
-                                    SPData = "";
-                                } else {
-                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                }
-                            }],
-                            ['button4', () => {
-                                let program = programData.programs[programData.programs.current];
-                                let page = program.pages[program.pages.current];
-                                let btnNum = 3;
-                                if (SPData != "") {
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                    infiniteFlightData.route.alts.set(SPData, null);
-                                    SPData = "";
-                                } else {
-                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                }
-                            }],
-                            ['button5', () => {
-                                let program = programData.programs[programData.programs.current];
-                                let page = program.pages[program.pages.current];
-                                let btnNum = 4;
-                                if (SPData != "") {
-                                    console.log("BIG TEST" + page.custom.fixPlus + btnNum)
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = SPData;
-                                    infiniteFlightData.route.alts.set(SPData, null);
-                                    SPData = "";
-                                } else {
-                                    SPData = infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum];
-                                    infiniteFlightData.route.fixes[page.custom.fixPlus + btnNum] = "";
-                                }
-                            }]
-                        ]
-                    }
-                }
-            }
-        },
-        DEPARR:{
-            render: () => {
-                //Page Title
-                displayCTX.textAlign = 'center';
-                displayCTX.font = "bold 50px Courier New"
-                displayCTX.fillText("DEP/ARR", 500, 65);
-                if(true){
-                    displayCTX.textAlign = 'left';
-                    if(SPData != "PAGE NOT AVAILABLE"){
-                        SPDataTemp = SPData;
-                    }
-                    SPData = "PAGE NOT AVAILABLE"
-                    SPError = true;
-                    setTimeout(() => {
-                        if (SPError && programData.programs.current != "DEPARR") {
-                            SPData = SPDataTemp;
-                            SPError = false;
-                        }
-                    }, 2500);
-                }else{
-                    if (infiniteFlightData.route.origin == "" && SPData == "") {
-                        SPDataTemp = SPData;
-                        SPData = "MISSING DEP AIRPORT"
-                        SPError = true;
-                        setTimeout(() => {
-                            if (SPError) {
-                                SPData = SPDataTemp;
-                                SPError = false;
-                            }
-                        }, 2500);
-                    } else if (infiniteFlightData.route.destination == "" && SPData == "") {
-                        SPDataTemp = SPData;
-                        SPData = "MISSING ARR AIRPORT"
-                        SPError = true;
-                        setTimeout(() => {
-                            if (SPError) {
-                                SPData = SPDataTemp;
-                                SPError = false;
-                            }
-                        }, 2500);
-                    }
-
-                    //Departure
-                    //Indicator
-                    displayCTX.textAlign = 'left';
-                    displayCTX.font = "bold 35px Courier New";
-                    displayCTX.fillText("<DEP", 15, 160);
-                    //Arrival
-                    //Indicator 1
-                    //Indicator
-                    displayCTX.textAlign = 'right';
-                    displayCTX.font = "bold 35px Courier New";
-                    displayCTX.fillText("ARR>", 985, 160);
-                    //Indicator 2
-                    //Indicator
-                    displayCTX.font = "bold 35px Courier New";
-                    displayCTX.fillText("ARR>", 985, 265);
-                    //Airports
-                    displayCTX.textAlign = 'center';
-                    //Departure
-                    displayCTX.font = "normal 35px Courier New";
-                    displayCTX.fillText(infiniteFlightData.route.origin, 500, 160);
-                    //Arrival
-                    displayCTX.font = "normal 35px Courier New";
-                    displayCTX.fillText(infiniteFlightData.route.destination, 500, 265);
-                    displayCTX.textAlign = 'left';
-                }
-                
-            },
-            pages: {
-                current: 'page1',
-                max: 1,
-                page1: {
-                    order: 1,
-                    nPage: null,
-                    pPage: null,
-                }
-            }
-        },
-        LEGS:{
-            render: () => {
-                const program = programData.programs.LEGS;
-                let page = program.pages[program.pages.current];
-                //Program Title
-                displayCTX.textAlign = 'center';
-                displayCTX.font = "bold 50px Courier New"
-                displayCTX.fillText("LEGS", 500, 65);
-
-                //Execute
-                if (buttonActions.exec.program != "LEGS") {
-                    buttonActions.exec.program = "LEGS";
-                    buttonActions.exec.action = function () {
-                        IFC.sendCommand({
-                            "Command": "Commands.FlightPlan.Clear",
-                            "Parameters": []
-                        })
-                        infiniteFlightData.route.fixes.forEach(fix => {
-                            let name = fix;
-                            if(infiniteFlightData.route.alts.has(fix)){
-                                let AltVal = infiniteFlightData.route.alts.get(fix);
-                                if(AltVal){
-                                    name += `@${AltVal.toString()}`;
-                                }
-                            }
-                            console.log(name);
-                            IFC.sendCommand({
-                                "Command": "Commands.FlightPlan.AddWaypoints",
-                                "Parameters": [{ "Name": "WPT", "Value": name }]
-                            });
-                        })
-                        IFC.sendCommand({
-                            "Command": "Commands.FlightPlan.AddWaypoints",
-                            "Parameters": [{ "Name": "WPT", "Value": infiniteFlightData.route.destination }]
-                        });
-                    }
-                }
-
-                let pageNum = programData.programs.LEGS.pages.current;
-                
-                //Calculate pages required
-                let fixLength = infiniteFlightData.route.fixes.length;
-                let pagesRequired = (Math.floor((fixLength / 5)) + ((fixLength / 5) % 1 == 0 ? 0 : 1));
-                if (program.pages.max != pagesRequired && pagesRequired != 0){
-                    delete program.pages.page1;
-                    program.pages.max = 0;
-                    while (pagesRequired != 0) {
-                        pagesRequired --;
-                        let prevPageNum = program.pages.max;
-                        program.pages.max++
-                        let newPageNum = program.pages.max;
-                        if(prevPageNum != 0){
-                            program.pages[`page${prevPageNum}`].nPage = ["Fixes", `page${newPageNum}`]
-                        }
-                        
-                        program.pages[`page${newPageNum}`] = {
-                            nPage: null,
-                            pPage: prevPageNum != 0 ? ["Fixes", `page${(prevPageNum).toString()}`] : null,
-                            order: newPageNum,
-                            custom: {
-                                fixPlus: (newPageNum - 1) * 5
-                            },
-                            sideButtons: {
-                                right: [
-                                    ['button1', () =>{
-                                        let plus = 0;
-                                        //Fix name    
-                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                        //Fix altitude
-                                        if(infiniteFlightData.route.alts.has(fixName)){
-                                            try{
-                                                let altNum = parseInt(SPData);
-                                                if(altNum != NaN){
-                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                                }else{
-                                                    displayCTX.textAlign = 'left';
-                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                        SPDataTemp = SPData;
-                                                    }
-                                                    SPData = "UNABLE TO PARSE ALTITUDE"
-                                                    SPError = true;
-                                                    setTimeout(() => {
-                                                        if (SPError) {
-                                                            SPData = SPDataTemp;
-                                                            SPError = false;
-                                                        }
-                                                    }, 2500);
-                                                }
-                                            }catch(err){
-                                                displayCTX.textAlign = 'left';
-                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                    SPDataTemp = SPData;
-                                                }
-                                                SPData = "UNABLE TO PARSE ALTITUDE"
-                                                SPError = true;
-                                                setTimeout(() => {
-                                                    if (SPError) {
-                                                        SPData = SPDataTemp;
-                                                        SPError = false;
-                                                    }
-                                                }, 2500);
-                                            }
-                                            
-                                        }else{
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO LOCATE FIX") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO LOCATE FIX"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    }],
-                                    ['button2', () => {
-                                        let plus = 1;
-                                        //Fix name    
-                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                        //Fix altitude
-                                        if (infiniteFlightData.route.alts.has(fixName)) {
-                                            try {
-                                                let altNum = parseInt(SPData);
-                                                if (altNum != NaN) {
-                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                                } else {
-                                                    displayCTX.textAlign = 'left';
-                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                        SPDataTemp = SPData;
-                                                    }
-                                                    SPData = "UNABLE TO PARSE ALTITUDE"
-                                                    SPError = true;
-                                                    setTimeout(() => {
-                                                        if (SPError) {
-                                                            SPData = SPDataTemp;
-                                                            SPError = false;
-                                                        }
-                                                    }, 2500);
-                                                }
-                                            } catch (err) {
-                                                displayCTX.textAlign = 'left';
-                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                    SPDataTemp = SPData;
-                                                }
-                                                SPData = "UNABLE TO PARSE ALTITUDE"
-                                                SPError = true;
-                                                setTimeout(() => {
-                                                    if (SPError) {
-                                                        SPData = SPDataTemp;
-                                                        SPError = false;
-                                                    }
-                                                }, 2500);
-                                            }
-
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO LOCATE FIX") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO LOCATE FIX"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    }],
-                                    ['button3', () => {
-                                        let plus = 2;
-                                        //Fix name    
-                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                        //Fix altitude
-                                        if (infiniteFlightData.route.alts.has(fixName)) {
-                                            try {
-                                                let altNum = parseInt(SPData);
-                                                if (altNum != NaN) {
-                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                                } else {
-                                                    displayCTX.textAlign = 'left';
-                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                        SPDataTemp = SPData;
-                                                    }
-                                                    SPData = "UNABLE TO PARSE ALTITUDE"
-                                                    SPError = true;
-                                                    setTimeout(() => {
-                                                        if (SPError) {
-                                                            SPData = SPDataTemp;
-                                                            SPError = false;
-                                                        }
-                                                    }, 2500);
-                                                }
-                                            } catch (err) {
-                                                displayCTX.textAlign = 'left';
-                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                    SPDataTemp = SPData;
-                                                }
-                                                SPData = "UNABLE TO PARSE ALTITUDE"
-                                                SPError = true;
-                                                setTimeout(() => {
-                                                    if (SPError) {
-                                                        SPData = SPDataTemp;
-                                                        SPError = false;
-                                                    }
-                                                }, 2500);
-                                            }
-
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO LOCATE FIX") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO LOCATE FIX"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    }],
-                                    ['button4', () => {
-                                        let plus = 3;
-                                        //Fix name    
-                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                        //Fix altitude
-                                        if (infiniteFlightData.route.alts.has(fixName)) {
-                                            try {
-                                                let altNum = parseInt(SPData);
-                                                if (altNum != NaN) {
-                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                                } else {
-                                                    displayCTX.textAlign = 'left';
-                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                        SPDataTemp = SPData;
-                                                    }
-                                                    SPData = "UNABLE TO PARSE ALTITUDE"
-                                                    SPError = true;
-                                                    setTimeout(() => {
-                                                        if (SPError) {
-                                                            SPData = SPDataTemp;
-                                                            SPError = false;
-                                                        }
-                                                    }, 2500);
-                                                }
-                                            } catch (err) {
-                                                displayCTX.textAlign = 'left';
-                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                    SPDataTemp = SPData;
-                                                }
-                                                SPData = "UNABLE TO PARSE ALTITUDE"
-                                                SPError = true;
-                                                setTimeout(() => {
-                                                    if (SPError) {
-                                                        SPData = SPDataTemp;
-                                                        SPError = false;
-                                                    }
-                                                }, 2500);
-                                            }
-
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO LOCATE FIX") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO LOCATE FIX"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    }],
-                                    ['button5', () => {
-                                        let plus = 4;
-                                        //Fix name    
-                                        let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                        //Fix altitude
-                                        if (infiniteFlightData.route.alts.has(fixName)) {
-                                            try {
-                                                let altNum = parseInt(SPData);
-                                                if (altNum != NaN) {
-                                                    infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                                } else {
-                                                    displayCTX.textAlign = 'left';
-                                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                        SPDataTemp = SPData;
-                                                    }
-                                                    SPData = "UNABLE TO PARSE ALTITUDE"
-                                                    SPError = true;
-                                                    setTimeout(() => {
-                                                        if (SPError) {
-                                                            SPData = SPDataTemp;
-                                                            SPError = false;
-                                                        }
-                                                    }, 2500);
-                                                }
-                                            } catch (err) {
-                                                displayCTX.textAlign = 'left';
-                                                if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                    SPDataTemp = SPData;
-                                                }
-                                                SPData = "UNABLE TO PARSE ALTITUDE"
-                                                SPError = true;
-                                                setTimeout(() => {
-                                                    if (SPError) {
-                                                        SPData = SPDataTemp;
-                                                        SPError = false;
-                                                    }
-                                                }, 2500);
-                                            }
-
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO LOCATE FIX") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO LOCATE FIX"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    }]
-                                ],
-                            }
-                        };
-                    }
-                }
-
-                //Rendering
-                if(pagesRequired == 0){
-                    setTimeout(() => {
-                        if(pagesRequired == 0){
-                            displayCTX.textAlign = 'left';
-                            if (SPData != "NO FIXES FOUND") {
-                                SPDataTemp = SPData;
-                            }
-                            SPData = "NO FIXES FOUND"
-                            SPError = true;
-                            setTimeout(() => {
-                                if (SPError) {
-                                    SPData = SPDataTemp;
-                                    SPError = false;
-                                }
-                            }, 2500);
-                        }
-                    }, 1000);
-                    
-                }else{
-                    //Left Col Header
-                    displayCTX.textAlign = 'left';
-                    displayCTX.font = "bold 30px Courier New";
-                    displayCTX.fillText("WAYPOINT", 15, 105);
-                    //Right Col Header
-                    displayCTX.textAlign = 'right';
-                    displayCTX.font = "bold 30px Courier New";
-                    displayCTX.fillText("ALTITUDE", 985, 105);
-                    //Page 1 Buttons
-                    
-                    //Render Values
-                    let plus = 0;
-                    let name = "";
-                    let altitude = 0;
-                        //L1
-                        plus = 0;
-                            //Fix name    
-                            displayCTX.textAlign = 'left';
-                            name = infiniteFlightData.route.fixes[page.custom.fixPlus + plus]
-                            displayCTX.fillText(name ? name : "", 15, 160);
-                            //Fix altitude
-                            displayCTX.textAlign = 'right';
-                            altitude = (infiniteFlightData.route.alts.has(name) ? infiniteFlightData.route.alts.get(name) : false);
-                            displayCTX.fillText(altitude ? infiniteFlightData.route.alts.get(name) : "☐☐☐☐☐", 985, 160);
-                            displayCTX.textAlign = 'left';
-                        //L2
-                        plus = 1;
-                            //Fix name    
-                            displayCTX.textAlign = 'left';
-                            name = infiniteFlightData.route.fixes[page.custom.fixPlus + plus]
-                            displayCTX.fillText(name ? name : "", 15, 265);
-                            //Fix altitude
-                            displayCTX.textAlign = 'right';
-                            altitude = (infiniteFlightData.route.alts.has(name) ? infiniteFlightData.route.alts.get(name) : false);
-                            displayCTX.fillText(altitude ? infiniteFlightData.route.alts.get(name) : name ? "☐☐☐☐☐" : "", 985, 265);
-                            displayCTX.textAlign = 'left';
-                        //L3
-                        plus = 2;
-                            //Fix name    
-                            displayCTX.textAlign = 'left';
-                            name = infiniteFlightData.route.fixes[page.custom.fixPlus + plus]
-                            displayCTX.fillText(name ? name : "", 15, 370);
-                            //Fix altitude
-                            displayCTX.textAlign = 'right';
-                            altitude = (infiniteFlightData.route.alts.has(name) ? infiniteFlightData.route.alts.get(name) : false);
-                            displayCTX.fillText(altitude ? infiniteFlightData.route.alts.get(name) : name ? "☐☐☐☐☐" : "", 985, 370);
-                            displayCTX.textAlign = 'left';
-                        //L4
-                        plus = 3;
-                            //Fix name    
-                            displayCTX.textAlign = 'left';
-                            name = infiniteFlightData.route.fixes[page.custom.fixPlus + plus]
-                            displayCTX.fillText(name ? name : "", 15, 475);
-                            //Fix altitude
-                            displayCTX.textAlign = 'right';
-                            altitude = (infiniteFlightData.route.alts.has(name) ? infiniteFlightData.route.alts.get(name) : false);
-                            (altitude);
-                            displayCTX.fillText(altitude ? infiniteFlightData.route.alts.get(name) : name ? "☐☐☐☐☐" : "", 985, 475);
-                            displayCTX.textAlign = 'left';
-                        //L5
-                        plus = 4;
-                            //Fix name    
-                            displayCTX.textAlign = 'left';
-                            name = infiniteFlightData.route.fixes[page.custom.fixPlus + plus]
-                            displayCTX.fillText(name ? name : "", 15, 580);
-                            //Fix altitude
-                            displayCTX.textAlign = 'right';
-                            altitude = (infiniteFlightData.route.alts.has(name) ? infiniteFlightData.route.alts.get(name) : false);
-                            (altitude);
-                            displayCTX.fillText(altitude ? infiniteFlightData.route.alts.get(name) : name ? "☐☐☐☐☐" : "", 985, 580);
-                            displayCTX.textAlign = 'left';
-                    //Buttons
-                    page.sideButtons.right.forEach(button => {
-                        let index = button[0];
-                        let func = button[1];
-                        sideButtons.right[index].func = func;
-                    })
-
-                }
-            },
-            pages: {
-                current: 'page1',
-                max: 1,
-                page1:{
-                    order: 1,
-                    nPage: null,
-                    pPage: null,
-                    custom: {
-                        fixPlus: 0
-                    },
-                    sideButtons: {
-                        left: [],
-                        right: [['button1', () => {
-                            let plus = 0;
-                            //Fix name    
-                            let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
-                            let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                            //Fix altitude
-                            if (infiniteFlightData.route.alts.has(fixName)) {
-                                try {
-                                    let altNum = parseInt(SPData);
-                                    if (altNum != NaN) {
-                                        infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                    } else {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "UNABLE TO PARSE ALTITUDE"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }
-                                } catch (err) {
-                                    displayCTX.textAlign = 'left';
-                                    if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                        SPDataTemp = SPData;
-                                    }
-                                    SPData = "UNABLE TO PARSE ALTITUDE"
-                                    SPError = true;
-                                    setTimeout(() => {
-                                        if (SPError) {
-                                            SPData = SPDataTemp;
-                                            SPError = false;
-                                        }
-                                    }, 2500);
-                                }
-
-                            } else {
-                                displayCTX.textAlign = 'left';
-                                if (SPData != "UNABLE TO LOCATE FIX") {
-                                    SPDataTemp = SPData;
-                                }
-                                SPData = "UNABLE TO LOCATE FIX"
-                                SPError = true;
-                                setTimeout(() => {
-                                    if (SPError) {
-                                        SPData = SPDataTemp;
-                                        SPError = false;
-                                    }
-                                }, 2500);
-                            }
-                        }],
-                            ['button2', () => {
-                                let plus = 1;
-                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
-                                //Fix name    
-                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                //Fix altitude
-                                if (infiniteFlightData.route.alts.has(fixName)) {
-                                    try {
-                                        let altNum = parseInt(SPData);
-                                        if (altNum != NaN) {
-                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO PARSE ALTITUDE"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    } catch (err) {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "UNABLE TO PARSE ALTITUDE"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }
-
-                                } else {
-                                    displayCTX.textAlign = 'left';
-                                    if (SPData != "UNABLE TO LOCATE FIX") {
-                                        SPDataTemp = SPData;
-                                    }
-                                    SPData = "UNABLE TO LOCATE FIX"
-                                    SPError = true;
-                                    setTimeout(() => {
-                                        if (SPError) {
-                                            SPData = SPDataTemp;
-                                            SPError = false;
-                                        }
-                                    }, 2500);
-                                }
-                            }],
-                            ['button3', () => {
-                                let plus = 2;
-                                //Fix name    
-                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
-                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                //Fix altitude
-                                if (infiniteFlightData.route.alts.has(fixName)) {
-                                    try {
-                                        let altNum = parseInt(SPData);
-                                        if (altNum != NaN) {
-                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO PARSE ALTITUDE"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    } catch (err) {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "UNABLE TO PARSE ALTITUDE"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }
-
-                                } else {
-                                    displayCTX.textAlign = 'left';
-                                    if (SPData != "UNABLE TO LOCATE FIX") {
-                                        SPDataTemp = SPData;
-                                    }
-                                    SPData = "UNABLE TO LOCATE FIX"
-                                    SPError = true;
-                                    setTimeout(() => {
-                                        if (SPError) {
-                                            SPData = SPDataTemp;
-                                            SPError = false;
-                                        }
-                                    }, 2500);
-                                }
-                            }],
-                            ['button4', () => {
-                                let plus = 3;
-                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
-                                //Fix name    
-                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                //Fix altitude
-                                if (infiniteFlightData.route.alts.has(fixName)) {
-                                    try {
-                                        let altNum = parseInt(SPData);
-                                        if (altNum != NaN) {
-                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO PARSE ALTITUDE"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    } catch (err) {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "UNABLE TO PARSE ALTITUDE"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }
-
-                                } else {
-                                    displayCTX.textAlign = 'left';
-                                    if (SPData != "UNABLE TO LOCATE FIX") {
-                                        SPDataTemp = SPData;
-                                    }
-                                    SPData = "UNABLE TO LOCATE FIX"
-                                    SPError = true;
-                                    setTimeout(() => {
-                                        if (SPError) {
-                                            SPData = SPDataTemp;
-                                            SPError = false;
-                                        }
-                                    }, 2500);
-                                }
-                            }],
-                            ['button5', () => {
-                                let plus = 4;
-                                let page = programData.programs.LEGS.pages[programData.programs.LEGS.pages.current]
-                                //Fix name    
-                                let fixName = infiniteFlightData.route.fixes[page.custom.fixPlus + plus];
-                                //Fix altitude
-                                if (infiniteFlightData.route.alts.has(fixName)) {
-                                    try {
-                                        let altNum = parseInt(SPData);
-                                        if (altNum != NaN) {
-                                            infiniteFlightData.route.alts.set(fixName, parseInt(SPData));
-                                        } else {
-                                            displayCTX.textAlign = 'left';
-                                            if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                                SPDataTemp = SPData;
-                                            }
-                                            SPData = "UNABLE TO PARSE ALTITUDE"
-                                            SPError = true;
-                                            setTimeout(() => {
-                                                if (SPError) {
-                                                    SPData = SPDataTemp;
-                                                    SPError = false;
-                                                }
-                                            }, 2500);
-                                        }
-                                    } catch (err) {
-                                        displayCTX.textAlign = 'left';
-                                        if (SPData != "UNABLE TO PARSE ALTITUDE") {
-                                            SPDataTemp = SPData;
-                                        }
-                                        SPData = "UNABLE TO PARSE ALTITUDE"
-                                        SPError = true;
-                                        setTimeout(() => {
-                                            if (SPError) {
-                                                SPData = SPDataTemp;
-                                                SPError = false;
-                                            }
-                                        }, 2500);
-                                    }
-
-                                } else {
-                                    displayCTX.textAlign = 'left';
-                                    if (SPData != "UNABLE TO LOCATE FIX") {
-                                        SPDataTemp = SPData;
-                                    }
-                                    SPData = "UNABLE TO LOCATE FIX"
-                                    SPError = true;
-                                    setTimeout(() => {
-                                        if (SPError) {
-                                            SPData = SPDataTemp;
-                                            SPError = false;
-                                        }
-                                    }, 2500);
-                                }
-                            }]]
-                    }
-                }
-            }
         }
     },
-    renderProgram: function(){
-        programData.programs[programData.programs.current].render();
-    }
-}
+    RTE: {
+        onLoad: function () {
+            let program = programs.RTE;
+            
+            programs.RTE.data.pages.set('page0', {
+                num: 0,
+                data: {
+                    sbLayout: {
+                        left: {
+                            button1: function () {
+                                if(SPInput == ""){
+                                    SPInput = IFData.route.origin.code;
+                                    IFData.route.origin.code = "";
+                                }else{
+                                    IFData.route.origin.code = SPInput;
+                                    SPInput = "";
+                                }
+                            }
+                        },
+                        right: {
+                            button1: function () {
+                                if (SPInput == "") {
+                                    SPInput = IFData.route.destination.code;
+                                    IFData.route.destination.code = "";
+                                } else {
+                                    IFData.route.destination.code = SPInput;
+                                    SPInput = "";
+                                }
+                            },
+                            button2: function () {
+                                if (SPInput == "") {
+                                    SPInput = IFData.route.DBRoute;
+                                    IFData.route.DBRoute = "";
+                                    IFData.route.fixes = [];
+                                    warn("Unloaded FPLN", 2500)
+                                } else {
+                                    IFData.route.DBRoute = SPInput;
+                                    SPInput = "";
+                                    currentErrorVar = true;
+                                    warn('Getting FPLN');
+                                    const options = {
+                                        method: 'GET',
+                                        url: `https://raw.githubusercontent.com/Sam-Neale/IFFMC-Routes/master/routes/${IFData.route.DBRoute}.json`
+                                    };
+                                    request(options, function (errorNET, response, body) {
+                                        if (errorNET) throw new Error(errorNET);
+                                        if (response.statusCode == 200) {
+                                            const route = JSON.parse(body);
+                                            IFData.route.fixes = route.fixArray;
+                                            currentErrorVar = false;
+                                            warn("FPLN Loaded", 2500);
+                                            let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+                                            let currentPages = program.data.pages.size - 1;
+                                            while (pagesRequired > currentPages) {
+                                                console.log(pagesRequired, currentPages)
+                                                program.data.pages.set(`page${currentPages + 1}`, {
+                                                    num: currentPages + 1,
+                                                    data: {
+                                                        sbLayout: {
+                                                            left: {},
+                                                            right: {
+                                                                button1: function () {
+                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                    let integer = 0;
+                                                                    console.log(SPInput)
+                                                                    if (SPInput != "") {
+                                                                        console.log("ADD")
+                                                                        console.log(page.data.routePlus, integer)
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                        SPInput = "";
+                                                                    } else {
+                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                    }
+                                                                },
+                                                                button2: function () {
+                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                    let integer = 1;
+                                                                    if (SPInput != "") {
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                        SPInput = "";
+                                                                    } else {
+                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                    }
+                                                                },
+                                                                button3: function () {
+                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                    let integer = 2;
+                                                                    if (SPInput != "") {
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                        SPInput = "";
+                                                                    } else {
+                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                    }
+                                                                },
+                                                                button4: function () {
+                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                    let integer = 3;
+                                                                    if (SPInput != "") {
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                        SPInput = "";
+                                                                    } else {
+                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                    }
+                                                                },
+                                                                button5: function () {
+                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                    let integer = 4;
+                                                                    if (SPInput != "") {
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                        SPInput = "";
+                                                                    } else {
+                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                    }
+                                                                }
+                                                            }
+                                                        },
+                                                        routePlus: currentPages * 5
+                                                    }
+                                                })
+                                                currentPages = program.data.pages.size - 1;
+                                            }
+                                        } else if (response.statusCode == 404) {
+                                            currentErrorVar = false;
+                                            setTimeout(() => {
+                                                error("FPLN UNAVILABLE", 2500);
+                                                SPInput = IFData.route.DBRoute;
+                                                IFData.route.DBRoute = "";
+                                                IFData.route.fixes = [];
+                                            }, 100);
+                                        } else {
+                                            currentErrorVar = false;
+                                            error("FPLN UNAVILABLE", 2500);
+                                            SPInput = IFData.route.DBRoute;
+                                            IFData.route.DBRoute = "";
+                                            IFData.route.fixes = [];
+                                            console.error(body);
+                                        }
 
-let infiniteFlightData = {
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            programs.RTE.data.pages.set('page1', {
+                num: 1,
+                data: {
+                    sbLayout: {
+                        left: {},
+                        right: {
+                            button1: function () {
+                                let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                let integer = 0;
+                                console.log(SPInput)
+                                if(SPInput != ""){
+                                    console.log("ADD")
+                                    console.log(page.data.routePlus, integer)
+                                    IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                    SPInput = "";
+                                }else{
+                                    SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                    IFData.route.fixes[page.data.routePlus + integer] = "";
+                                }
+                            },
+                            button2: function () {
+                                let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                let integer = 1;
+                                if (SPInput == "") {
+                                    IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                    SPInput = "";
+                                } else {
+                                    SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                    IFData.route.fixes[page.data.routePlus + integer] = "";
+                                }
+                            },
+                            button3: function () {
+                                let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                let integer = 2;
+                                if (SPInput != "") {
+                                    IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                    SPInput = "";
+                                } else {
+                                    SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                    IFData.route.fixes[page.data.routePlus + integer] = "";
+                                }
+                            },
+                            button4: function () {
+                                let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                let integer = 3;
+                                if (SPInput != "") {
+                                    IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                    SPInput = "";
+                                } else {
+                                    SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                    IFData.route.fixes[page.data.routePlus + integer] = "";
+                                }
+                            },
+                            button5: function () {
+                                let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                let integer = 4;
+                                if (SPInput != "") {
+                                    IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                    SPInput = "";
+                                } else {
+                                    SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                    IFData.route.fixes[page.data.routePlus + integer] = "";
+                                }
+                            }
+                        }
+                    },
+                    routePlus: 0
+                }
+            })
+            let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+            let currentPages = program.data.pages.size - 1;
+            while (pagesRequired > currentPages) {
+                console.log(pagesRequired, currentPages)
+                program.data.pages.set(`page${currentPages + 1}`, {
+                    num: currentPages + 1,
+                    data: {
+                        sbLayout: {
+                            left: {},
+                            right: {
+                                button1: function () {
+                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                    let integer = 0;
+                                    console.log(SPInput)
+                                    if (SPInput != "") {
+                                        console.log("ADD")
+                                        console.log(page.data.routePlus, integer)
+                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                        SPInput = "";
+                                    } else {
+                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                    }
+                                },
+                                button2: function () {
+                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                    let integer = 1;
+                                    if (SPInput != "") {
+                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                        SPInput = "";
+                                    } else {
+                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                    }
+                                },
+                                button3: function () {
+                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                    let integer = 2;
+                                    if (SPInput != "") {
+                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                        SPInput = "";
+                                    } else {
+                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                    }
+                                },
+                                button4: function () {
+                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                    let integer = 3;
+                                    if (SPInput != "") {
+                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                        SPInput = "";
+                                    } else {
+                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                    }
+                                },
+                                button5: function () {
+                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                    let integer = 4;
+                                    if (SPInput != "") {
+                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                        SPInput = "";
+                                    } else {
+                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                    }
+                                }
+                            }
+                        },
+                        routePlus: currentPages * 5
+                    }
+                })
+                currentPages = program.data.pages.size - 1;
+            }
+            let npage = program.data.pages.get(`page${program.data.pageNum}`);
+            if (npage.data.sbLayout) {
+                buttonActions.sideButtons = npage.data.sbLayout;
+            }
+        },
+        onPageChange: function (type) {
+            let program = programs.RTE;
+            if(type == "UP"){
+                if(program.data.pages.has(`page${program.data.pageNum + 1}`)){
+                    program.data.pageNum++;
+                    let npage = program.data.pages.get(`page${program.data.pageNum}`);
+                    console.log(npage)
+                    if(npage.data.sbLayout){
+                        console.log("MAYBE?")
+                        buttonActions.sideButtons = npage.data.sbLayout;
+                    }
+                }else{
+                    error("NO PAGE FOUND", 1000)
+                }
+            }else{
+                if (program.data.pages.has(`page${program.data.pageNum - 1}`)){
+                    program.data.pageNum--;
+                    let npage = program.data.pages.get(`page${program.data.pageNum}`);
+                    if (npage.data.sbLayout) {
+                        buttonActions.sideButtons = npage.data.sbLayout;
+                    }
+                }else{
+                    error("NO PAGE FOUND", 1000)
+                }
+            }
+        },
+        data: {
+            pageNum: 0,
+            pages: new Map()
+        },
+        constant: function (page) {
+            let program = programs.RTE;
+            //Program title
+            renderText("ROUTE", [500, 65], { fontSize: "50px", weight: "bold", align: "center" })
+            buttonActions.EXEC = function () {
+                if(currentProgram == "RTE"){
+                    IFC.sendCommand({
+                        "Command": "Commands.FlightPlan.Clear",
+                        "Parameters": []
+                    })
+                    /*IFC.sendCommand({
+                        "Command": "Commands.FlightPlan.AddWaypoints",
+                        "Parameters": [{ "Name": "WPT", "Value": IFData.route.origin}]
+                    });*/
+                    IFData.route.fixes.forEach(fix => {
+                        let name = fix;
+                        IFC.sendCommand({
+                            "Command": "Commands.FlightPlan.AddWaypoints",
+                            "Parameters": [{ "Name": "WPT", "Value": name }]
+                        });
+                    })
+                    IFC.sendCommand({
+                        "Command": "Commands.FlightPlan.AddWaypoints",
+                        "Parameters": [{ "Name": "WPT", "Value": IFData.route.destination.code }]
+                    });
+                }
+                    
+                }
+            
+            
+            if(program.data.pageNum == 0){
+                //Origin
+                    //Header
+                    renderText("ORIGIN", [15, 110], {fontSize: "25px", weight: "bold"});
+                    //Value
+                    renderText(IFData.route.origin.code != "" ? IFData.route.origin.code : "☐☐☐☐", [15, 160], {fontSize: "35px"});
+                //Destination
+                    //Header
+                    renderText("DEST", [985, 110], {fontSize: "25px", weight: "bold", align: "right"});
+                    //Value
+                    renderText(IFData.route.destination.code != "" ? IFData.route.destination.code : "☐☐☐☐", [985, 160], { fontSize: "35px", align: "right"});
+                //DB Route
+                    //Header
+                    renderText("DB Route", [985, 215], {fontSize: "25px", weight: "bold", align: "right"});
+                    //Value
+                    renderText(IFData.route.DBRoute != "" ? IFData.route.DBRoute : "☐☐☐☐", [985, 265], {fontSize: "35px", align: "right"});
+            }else{
+                let page = program.data.pages.get(`page${program.data.pageNum}`);
+                //Columns
+                renderText("VIA", [15, 110], {fontSize: "25px", weight: "bold"});
+                renderText("FIX", [985, 110], { fontSize: "25px", weight: "bold", align: "right"});
+                let integer = 0;
+                //Waypoint 1
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], {fontSize: "35px", align: "right"})
+                integer = 1;
+                //Waypoint 2
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+                integer = 2;
+                //Waypoint 3
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+                integer = 3;
+                //Waypoint 4
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+                integer = 4;
+                //Waypoint 5
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
+                renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right" })
+            }
+            
+        }
+    }
+};
+
+programs[currentProgram].onLoad();
+
+//Infinite Flight Data
+const IFData = {
     connected: false,
+    device: null,
     version: "0.0",
-    device: "Unknown",
-    vehicle:{
-        aircraft: "",
+    vehicle: {
+        model: "",
         livery: ""
     },
-    route:{
-        fixes:[
-
-        ],
-        alts: new Map(),
-        depRunway: "",
-        origin: "",
-        destination: "",
-        dbName: ""
+    route: {
+        fixes: [],
+        origin: {
+            code: "",
+            runway: ""
+        },
+        destination:{
+            code: "",
+            runway: ""
+        },
+        DBRoute: ""
     }
 }
-
-const sideButtons = {
-    reset: function () {
-        sideButtons.left = {
-            button1: {
-                func: function() {
-                    console.log("Pressed Button 1L")
-                }
-            },
-            button2: {
-                func: function () {
-                    console.log("Pressed Button 3L")
-                }
-            },
-            button3: {
-                func: function () {
-                    console.log("Pressed Button 3L")
-                }
-            },
-            button4: {
-                func: function () {
-                    console.log("Pressed Button 4L")
-                }
-            },
-            button5: {
-                func: function () {
-                    console.log("Pressed Button 5L")
-                }
-            },
-            button6: {
-                func: function () {
-                    console.log("Pressed Button 6L")
-                }
-            }
-        }
-        sideButtons.right = {
-            button1: {
-                func: function () {
-                    console.log("Pressed Button 1R")
-                }
-            },
-            button2: {
-                func: function () {
-                    console.log("Pressed Button 3R")
-                }
-            },
-            button3: {
-                func: function () {
-                    console.log("Pressed Button 3R")
-                }
-            },
-            button4: {
-                func: function () {
-                    console.log("Pressed Button 4R")
-                }
-            },
-            button5: {
-                func: function () {
-                    console.log("Pressed Button 5R")
-                }
-            },
-            button6: {
-                func: function () {
-                    console.log("Pressed Button 6R")
-                }
-            }
-        }
-    },
-    left:{
-        button1: {
-            func: function(){
-                console.log("Pressed Button 1L")
-            }
-        },
-        button2: {
-            func: function () {
-                console.log("Pressed Button 3L")
-            }
-        },
-        button3: {
-            func: function () {
-                console.log("Pressed Button 3L")
-            }
-        },
-        button4: {
-            func: function () {
-                console.log("Pressed Button 4L")
-            }
-        },
-        button5: {
-            func: function () {
-                console.log("Pressed Button 5L")
-            }
-        },
-        button6: {
-            func: function () {
-                console.log("Pressed Button 6L")
-            }
-        }
-    },
-    right: {
-        button1: {
-            func: function () {
-                console.log("Pressed Button 1R")
-            }
-        },
-        button2: {
-            func: function () {
-                console.log("Pressed Button 3R")
-            }
-        },
-        button3: {
-            func: function () {
-                console.log("Pressed Button 3R")
-            }
-        },
-        button4: {
-            func: function () {
-                console.log("Pressed Button 4R")
-            }
-        },
-        button5: {
-            func: function () {
-                console.log("Pressed Button 5R")
-            }
-        },
-        button6: {
-            func: function () {
-                console.log("Pressed Button 6R")
-            }
-        }
-    }
-}
-
-const IFC  = require('ifc-evolved');
-//const IFC = require('/Users/samneale/Documents/codeProjects.nosync/ifc-evolved/ifc.js');
-IFC.enableLog = true;
 IFC.init(
     function (initData) {
         console.log("IFC connected");
-        infiniteFlightData.connected = true;
-        infiniteFlightData.device = initData.DeviceName;
-        infiniteFlightData.version = initData.Version.split('.')[0] + "." + initData.Version.split('.')[1];
-        infiniteFlightData.vehicle.aircraft = initData.Aircraft;
-        infiniteFlightData.vehicle.livery = initData.Livery;
+        IFData.connected = true;
+        IFData.device = initData.DeviceName;
+        IFData.version = initData.Version.split('.')[0] + "." + initData.Version.split('.')[1];
+        IFData.vehicle.model = initData.Aircraft;
+        IFData.vehicle.livery = initData.Livery;
         setTimeout(() => {
             IFC.getAirplaneState((data) => {
                 console.log(data)
@@ -1837,34 +769,118 @@ IFC.init(
 
     },
     function () {
-        infiniteFlightData.connected = null;
+        IFData.connected = null;
         IFC.log("IFC connection error");
     }
 )
 
+//Render
+    //Core
+    const displayObject = document.getElementById('screen');
+    //@ts-ignore
+    const displayCTX = displayObject.getContext('2d');
+    //@ts-ignore
+    displayObject.width = 1000;
+    //@ts-ignore
+    displayObject.height = 774;
+    /**
+     * 
+     * @param {string} text 
+     * @param {Array<number>} position 
+     * @param {style} style 
+     */
+    function renderText(text, position, style) {
+        displayCTX.fillStyle = "#" + (style.color ? style.color : "FFFFFF");
+        displayCTX.font = `${style.weight ? style.weight : SPStyle.weight} ${style.fontSize ? style.fontSize : SPStyle.fontSize} ${style.fontFamily ? style.fontFamily : SPStyle.fontFamily}`;
+        displayCTX.strokeStyle = "#" + (style.color ? style.color : "FFFFFF");
+        displayCTX.textAlign = style.align ? style.align : SPStyle.align;
+        displayCTX.fillText(text, position[0], position[1]);
+        displayCTX.fillStyle = "#" + SPStyle.color;
+        displayCTX.font = `${SPStyle.weight} ${SPStyle.fontSize} ${SPStyle.fontFamily}`;
+        displayCTX.strokeStyle = "#" + SPStyle.color;
+        displayCTX.textAlign = SPStyle.align;
+    }
+    /**
+     * 
+     * @param {Array<number>} start 
+     * @param {Array<number>} end
+     * @param {number} dash 
+     * @param {number} width 
+     * @param {string} color 
+     */
+    function renderLine(start, end, dash, width, color) {
+        displayCTX.strokeStyle = "#" + color;
+        displayCTX.lineWidth = width;
+        displayCTX.beginPath();
+        displayCTX.setLineDash([dash]);
+        displayCTX.moveTo(start[0], start[1]);
+        displayCTX.lineTo(end[0], end[1]);
+        displayCTX.stroke();
+        displayCTX.fillStyle = "#" + SPStyle.color;
+        displayCTX.font = `${SPStyle.weight} ${SPStyle.fontSize} ${SPStyle.fontFamily}`;
+        displayCTX.strokeStyle = "#" + SPStyle.color;
+        displayCTX.lineWidth = 5;
+    }
+    //Constant
+        //Render Core
+        setInterval(() => {
+            //@ts-ignore
+            displayCTX.clearRect(0, 0, displayObject.width, displayObject.height);
+            //SP
+            renderScratchPad();
+            //Numbers
+            renderPageNumbers();
+            //Program
+            programs[currentProgram].constant();
+        }, 150);
+    //Scratch Pad
+    function renderScratchPad() {
+        //Line
+        renderLine([0,650],[1000,650], 15, 5, "FFFFFF");
+        switch(SPState){
+            case "AI":
+                renderText(SPInput, [20, 740], {color: "FFFFFF", fontSize: "40px"})
+                break;
+            case "CE":
+                renderText(SPComp, [20, 740], { color: "FF1111", weight: 'bold', fontSize: "40px"})
+                break;
+            case "CW":
+                renderText(SPComp, [20, 740], { color: "FFA500", fontSize: "40px"})
+                break;
+        }
+    }
+    //Page Number
+    function renderPageNumbers(){
+        //Get program
+        let program = programs[currentProgram];
+        let currentPage = program.data.pageNum;
+        let maxPages = program.data.pages.size;
+        renderText(`(${currentPage + 1}/${maxPages})`, [980, 40], { color: "FFFFFF", fontSize: "25px", weight: "bold", align: "right"})
+    }
 
-
-//Check for keyboard
-let keyboardEnabled = false;
-
-window.addEventListener('keydown', (e) =>{
-    if(keyboardEnabled){
-        switch((e.key).toUpperCase()){
+    
+    
+window.addEventListener('keydown', (e) => {
+    if (keyboardEnabled) {
+        switch ((e.key).toUpperCase()) {
             case "BACKSPACE":
-                player('click');
-                if (SPError == true) {
-                    SPError = false;
-                    SPData = "";
-                } else {
-                    SPData = SPData.slice(0, -1)
-                }
+                buttonClick('char', "DEL");
                 break;
             case "META":
+            case "DEAD":
+            case "ALT":
             case "SHIFT":
                 break;
+            case " ":
+                buttonClick('char','SP');
+                break;
             default:
-                player('click');
-                SPData += (e.key).toUpperCase();
+                let value = e.key.toUpperCase();
+                if(isNaN(parseInt(value))){
+                    buttonClick("char", value);
+                }else{
+                    buttonClick("num", parseInt(value));
+                }
                 break;
         }
     }
