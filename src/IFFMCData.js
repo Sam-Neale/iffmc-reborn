@@ -9,7 +9,7 @@ const AdmZip = require('adm-zip');
 const cache = new Map();
 
 const homedir = require('os').homedir();
-let IFFMCDir = path.join(homedir, '/IFFMC');
+let IFFMCDir = path.join(__dirname, '/data');
 
 if (!fs.existsSync(IFFMCDir)) {
     fs.mkdirSync(IFFMCDir);
