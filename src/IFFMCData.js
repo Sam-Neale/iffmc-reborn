@@ -133,7 +133,7 @@ function getSTARS(airport){
                         map.set(`${file.slice(0, -5)}.${type}`, {
                             waypoints: source,
                             name: type,
-                            fullName: `${file.slice(0, -5)}.${type}`,
+                            fullName: type != "" ? `${file.slice(0, -5)}.${type}` : file.slice(0,-5),
                             runways: data.runways
                         })
                         cache.set(`${file.slice(0, -5)}.${type}`, {

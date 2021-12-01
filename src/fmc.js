@@ -2,12 +2,7 @@
 //Requirements
 const request = require('request');
 const IFC = require('ifc-evolved');
-console.log("1")
 const IFFMCData = require("./IFFMCData.js");
-
-IFFMCData.SIDS.getAll("KLAX").then(result =>{
-    console.log(result)
-})
 
 //Globals
 let debug = true;
@@ -16,13 +11,15 @@ let SPState = "AI";
 let SPComp = "";
 let currentErrorVar = false;
 let keyboardEnabled = false;
+let safeIntervals = 100;
+let currentIntervals = 0;
 
 /*@type {style}*/
 const SPStyle = {
     color: "FFFFFF",
     weight: "normal",
     fontSize: "30px",
-    fontFamily: "Courier New",
+    fontFamily: "Roboto Mono",
     align: "left"
 }
 
@@ -215,8 +212,6 @@ async function buttonClick(type, value){
             currentErrorVar = false;
             if(value == "INVERT"){
                 let numbers = parseInt(SPInput);
-                console.log(numbers)
-                console.log(numbers != NaN)
                 if(isNaN(numbers) == false){
                     SPInput = (numbers * -1).toString();
                 }else{
@@ -286,7 +281,7 @@ let programs = {
         },
         constant: function (page) {
             //Program title
-            renderText("IDENT", [500, 65], {fontSize: "50px", weight: "bold", align: "center"})
+            renderText("IDENT", [500, 65], { fontSize: "50px", weight: "bold", align: "center"})
             //Data
             if(IFData.connected == true){
                     //Connection Status
@@ -393,79 +388,84 @@ let programs = {
                                             warn("FPLN Loaded", 2500);
                                             let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
                                             let currentPages = program.data.pages.size - 1;
-                                            while (pagesRequired > currentPages) {
-                                                console.log(pagesRequired, currentPages)
-                                                program.data.pages.set(`page${currentPages + 1}`, {
-                                                    num: currentPages + 1,
-                                                    data: {
-                                                        sbLayout: {
-                                                            left: {},
-                                                            right: {
-                                                                button1: function () {
-                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                                                    let integer = 0;
-                                                                    console.log(SPInput)
-                                                                    if (SPInput != "") {
-                                                                        console.log("ADD")
-                                                                        console.log(page.data.routePlus, integer)
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                                                        SPInput = "";
-                                                                    } else {
-                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                                                    }
-                                                                },
-                                                                button2: function () {
-                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                                                    let integer = 1;
-                                                                    if (SPInput != "") {
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                                                        SPInput = "";
-                                                                    } else {
-                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                                                    }
-                                                                },
-                                                                button3: function () {
-                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                                                    let integer = 2;
-                                                                    if (SPInput != "") {
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                                                        SPInput = "";
-                                                                    } else {
-                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                                                    }
-                                                                },
-                                                                button4: function () {
-                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                                                    let integer = 3;
-                                                                    if (SPInput != "") {
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                                                        SPInput = "";
-                                                                    } else {
-                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                                                    }
-                                                                },
-                                                                button5: function () {
-                                                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                                                    let integer = 4;
-                                                                    if (SPInput != "") {
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                                                        SPInput = "";
-                                                                    } else {
-                                                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+                                            currentIntervals = 0;
+                                            let pageChecker = setInterval(() =>{
+                                                currentIntervals++;
+                                                if(pagesRequired > currentPages && currentIntervals <= safeIntervals){
+                                                    program.data.pages.set(`page${currentPages + 1}`, {
+                                                        num: currentPages + 1,
+                                                        data: {
+                                                            sbLayout: {
+                                                                left: {},
+                                                                right: {
+                                                                    button1: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 0;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button2: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 1;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button3: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 2;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button4: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 3;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button5: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 4;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
                                                                     }
                                                                 }
-                                                            }
-                                                        },
-                                                        routePlus: currentPages * 5
-                                                    }
-                                                })
-                                                currentPages = program.data.pages.size - 1;
-                                            }
+                                                            },
+                                                            routePlus: currentPages * 5
+                                                        }
+                                                    })
+                                                    currentPages = program.data.pages.size - 1;
+                                                }else if(pagesRequired < currentPages){
+                                                    currentPages = program.data.pages.size - 1;
+                                                    program.data.pages.delete(`page${currentPages}`);
+                                                }else{
+                                                    clearInterval(pageChecker)
+                                                }
+                                            }, 25);
                                         }else{
                                             if(result[1] == 404){
                                                 currentErrorVar = false;
@@ -500,10 +500,7 @@ let programs = {
                             button1: function () {
                                 let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
                                 let integer = 0;
-                                console.log(SPInput)
                                 if(SPInput != ""){
-                                    console.log("ADD")
-                                    console.log(page.data.routePlus, integer)
                                     IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                     SPInput = "";
                                 }else{
@@ -562,81 +559,84 @@ let programs = {
             })
             let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
             let currentPages = program.data.pages.size - 1;
-            while (pagesRequired > currentPages) {
-                console.log(pagesRequired, currentPages)
-                program.data.pages.set(`page${currentPages + 1}`, {
-                    num: currentPages + 1,
-                    data: {
-                        sbLayout: {
-                            left: {},
-                            right: {
-                                button1: function () {
-                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                    let integer = 0;
-                                    console.log(SPInput)
-                                    if (SPInput != "") {
-                                        console.log("ADD")
-                                        console.log(page.data.routePlus, integer)
-                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                        SPInput = "";
-                                    } else {
-                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                    }
-                                },
-                                button2: function () {
-                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                    let integer = 1;
-                                    console.log(SPInput)
-                                    if (SPInput != "") {
-                                        console.log("ADD")
-                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                        SPInput = "";
-                                    } else {
-                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                    }
-                                },
-                                button3: function () {
-                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                    let integer = 2;
-                                    if (SPInput != "") {
-                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                        SPInput = "";
-                                    } else {
-                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                    }
-                                },
-                                button4: function () {
-                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                    let integer = 3;
-                                    if (SPInput != "") {
-                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                        SPInput = "";
-                                    } else {
-                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                        IFData.route.fixes[page.data.routePlus + integer] = "";
-                                    }
-                                },
-                                button5: function () {
-                                    let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
-                                    let integer = 4;
-                                    if (SPInput != "") {
-                                        IFData.route.fixes[page.data.routePlus + integer] = SPInput;
-                                        SPInput = "";
-                                    } else {
-                                        SPInput = IFData.route.fixes[page.data.routePlus + integer];
-                                        IFData.route.fixes[page.data.routePlus + integer] = "";
+            currentIntervals = 0;
+            let pageChecker = setInterval(() => {
+                currentIntervals++;
+                if (pagesRequired > currentPages && currentIntervals <= safeIntervals) {
+                    program.data.pages.set(`page${currentPages + 1}`, {
+                        num: currentPages + 1,
+                        data: {
+                            sbLayout: {
+                                left: {},
+                                right: {
+                                    button1: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 0;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button2: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 1;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button3: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 2;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button4: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 3;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button5: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 4;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        routePlus: currentPages * 5
-                    }
-                })
-                currentPages = program.data.pages.size - 1;
-            }
+                            },
+                            routePlus: currentPages * 5
+                        }
+                    })
+                    currentPages = program.data.pages.size - 1;
+                }else if (pagesRequired < currentPages) {
+                    currentPages = program.data.pages.size - 1;
+                    program.data.pages.delete(`page${currentPages}`);
+                }else{
+                    clearInterval(pageChecker)
+                }
+            }, 25);
             let npage = program.data.pages.get(`page${program.data.pageNum}`);
             if (npage.data.sbLayout) {
                 buttonActions.sideButtons = npage.data.sbLayout;
@@ -648,9 +648,7 @@ let programs = {
                 if(program.data.pages.has(`page${program.data.pageNum + 1}`)){
                     program.data.pageNum++;
                     let npage = program.data.pages.get(`page${program.data.pageNum}`);
-                    console.log(npage)
                     if(npage.data.sbLayout){
-                        console.log("MAYBE?")
                         buttonActions.sideButtons = npage.data.sbLayout;
                     }
                 }else{
@@ -688,8 +686,6 @@ let programs = {
                     });*/
                     const SID = await IFFMCData.SIDS.get(IFData.route.SID);
                     const STAR = await IFFMCData.STARS.get(IFData.route.STAR);
-                    console.log(SID);
-                    console.log(STAR);
                     IFData.route.fixes.forEach(fix => {
                         let name = fix;
                         if(name == "//SID" && SID){
@@ -840,6 +836,13 @@ let programs = {
                     if(departureData){
                         if(arrivalData){
                             if (program.data.step == "CORE") {
+                                if(program.data.pages.size != 1){
+                                    program.data.pages.clear();
+                                    program.data.pages.set("page0", {
+
+                                    })
+                                }
+                                
                                 //Left Column
                                 renderText("< DEPARTURE", [15, 160], { fontSize: "35px", align: "left" })
                                 //Center Column
@@ -869,11 +872,19 @@ let programs = {
                             }else if(program.data.step == "DEPARTURE"){
                                 let pagesRequired = Math.floor(departureData.size / 5) + 1;
                                 let currentPages = program.data.pages.size;
-                                console.log(pagesRequired, currentPages)
-                                while (pagesRequired > currentPages && program.data.step == "DEPARTURE"){
-                                    program.data.pages.set(`page${currentPages}`)
-                                    currentPages = program.data.pages.size;
-                                }
+                                currentIntervals = 0;
+                                let pageChecker = setInterval(() => {
+                                    currentIntervals++;
+                                    if (pagesRequired > currentPages && currentIntervals <= safeIntervals && program.data.step == "DEPARTURE") {
+                                        program.data.pages.set(`page${currentPages}`)
+                                        currentPages = program.data.pages.size;
+                                    } else if (pagesRequired < currentPages) {
+                                        currentPages = program.data.pages.size - 1;
+                                        program.data.pages.delete(`page${currentPages}`);
+                                    }else{
+                                        clearInterval(pageChecker)
+                                    }
+                                }, 25)
                                 //Columns
                                 renderText("RUNWAY", [15, 110], { fontSize: "25px", weight: "bold" });
                                 renderText("SID", [985, 110], { fontSize: "25px", weight: "bold", align: "right" });
@@ -952,11 +963,19 @@ let programs = {
                             } else if (program.data.step == "ARRIVAL") {
                                 let pagesRequired = Math.floor(arrivalData.size / 5) + 1;
                                 let currentPages = program.data.pages.size;
-                                console.log(pagesRequired, currentPages)
-                                while (pagesRequired > currentPages && program.data.step == "ARRIVAL") {
-                                    program.data.pages.set(`page${currentPages}`)
-                                    currentPages = program.data.pages.size;
-                                }
+                                currentIntervals = 0;
+                                let pageChecker = setInterval(() =>{
+                                    currentIntervals++;
+                                    if (pagesRequired > currentPages && currentIntervals <= safeIntervals && program.data.step == "ARRIVAL") {
+                                        program.data.pages.set(`page${currentPages}`)
+                                        currentPages = program.data.pages.size;
+                                    } else if (pagesRequired < currentPages) {
+                                        currentPages = program.data.pages.size - 1;
+                                        program.data.pages.delete(`page${currentPages}`);
+                                    }else{
+                                        clearInterval(pageChecker)
+                                    }
+                                }, 25);
                                 //Columns
                                 renderText("RUNWAY", [15, 110], { fontSize: "25px", weight: "bold" });
                                 renderText("STAR", [985, 110], { fontSize: "25px", weight: "bold", align: "right" });
@@ -1099,7 +1118,7 @@ IFC.init(
 
 //Render
     //Core
-    const displayObject = document.getElementById('screen');
+    const displayObject = document.getElementById('screenPanel');
     //@ts-ignore
     const displayCTX = displayObject.getContext('2d');
     //@ts-ignore
@@ -1155,14 +1174,16 @@ IFC.init(
             renderPageNumbers();
             //Program
             programs[currentProgram].constant();
-        }, 150);
+        }, 50);
     //Scratch Pad
     function renderScratchPad() {
         //Line
-        renderLine([0,650],[1000,650], 15, 5, "FFFFFF");
+        renderLine([15,650],[985,650], 25, 2.5, "00CCFF");
         switch(SPState){
             case "AI":
-                renderText(SPInput, [20, 740], {color: "FFFFFF", fontSize: "40px"})
+                renderText('[', [0, 750], {color: "00CCFF", weight: 'bold', fontSize: "40px"})
+                renderText(SPInput, [25, 750], {color: "FFFFFF", fontSize: "40px"})
+                renderText(']', [1000, 750], { color: "00CCFF", weight: 'bold', fontSize: "40px", align: "right" })
                 break;
             case "CE":
                 renderText(SPComp, [20, 740], { color: "FF1111", weight: 'bold', fontSize: "40px"})
