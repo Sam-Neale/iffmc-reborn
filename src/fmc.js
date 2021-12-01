@@ -3,6 +3,7 @@
 const request = require('request');
 const IFC = require('ifc-evolved');
 const IFFMCData = require("./IFFMCData.js");
+const { BrowserWindow } = require('@electron/remote');
 
 //Globals
 let debug = true;
@@ -684,11 +685,14 @@ let programs = {
                         "Command": "Commands.FlightPlan.AddWaypoints",
                         "Parameters": [{ "Name": "WPT", "Value": IFData.route.origin}]
                     });*/
-                    const SID = await IFFMCData.SIDS.get(IFData.route.SID);
-                    const STAR = await IFFMCData.STARS.get(IFData.route.STAR);
+                    const SID = await IFFMCData.SIDS.get(IFData.route.SID,IFData.route.origin.code);
+                    const STAR = await IFFMCData.STARS.get(IFData.route.STAR,IFData.route.destination.code);
+                    console.log(SID);
+                    console.log(STAR);
                     IFData.route.fixes.forEach(fix => {
                         let name = fix;
                         if(name == "//SID" && SID){
+                            console.log(SID);
                             SID.waypoints.forEach(waypoint =>{
                                 IFC.sendCommand({
                                     "Command": "Commands.FlightPlan.AddWaypoints",
@@ -899,10 +903,10 @@ let programs = {
                                 //Number 1
                                 if(departureArray[integer + pagePlus]){
                                     //Runways
-                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF"});
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF"});
                                     //Name
-                                    names.push(departureArray[integer + pagePlus].fullName);
-                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(departureArray[integer + pagePlus].name);
+                                    renderText(departureArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button1 = function () {
                                         IFData.route.SID = names[0];
@@ -912,10 +916,10 @@ let programs = {
                                 //Number 2
                                 if (departureArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(departureArray[integer + pagePlus].fullName);
-                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(departureArray[integer + pagePlus].name);
+                                    renderText(departureArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button2 = function () {
                                         IFData.route.SID = names[1];
@@ -925,10 +929,10 @@ let programs = {
                                 //Number 3
                                 if (departureArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(departureArray[integer + pagePlus].fullName);
-                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(departureArray[integer + pagePlus].name);
+                                    renderText(departureArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button3 = function () {
                                         IFData.route.SID = names[2];
@@ -938,10 +942,10 @@ let programs = {
                                 //Number 4
                                 if (departureArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(departureArray[integer + pagePlus].fullName);
-                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(departureArray[integer + pagePlus].name);
+                                    renderText(departureArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button4 = function () {
                                         IFData.route.SID = names[3];
@@ -951,10 +955,10 @@ let programs = {
                                 //Number 5
                                 if (departureArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(departureArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(departureArray[integer + pagePlus].fullName);
-                                    renderText(departureArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(departureArray[integer + pagePlus].name);
+                                    renderText(departureArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.SID == departureArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button5 = function () {
                                         IFData.route.SID = names[4];
@@ -990,10 +994,10 @@ let programs = {
                                 //Number 1
                                 if (arrivalArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(arrivalArray[integer + pagePlus].fullName);
-                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(arrivalArray[integer + pagePlus].name);
+                                    renderText(arrivalArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button1 = function () {
                                         IFData.route.STAR = names[0];
@@ -1003,10 +1007,10 @@ let programs = {
                                 //Number 2
                                 if (arrivalArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(arrivalArray[integer + pagePlus].fullName);
-                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(arrivalArray[integer + pagePlus].name);
+                                    renderText(arrivalArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button2 = function () {
                                         IFData.route.STAR = names[1];
@@ -1016,10 +1020,10 @@ let programs = {
                                 //Number 3
                                 if (arrivalArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(arrivalArray[integer + pagePlus].fullName);
-                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(arrivalArray[integer + pagePlus].name);
+                                    renderText(arrivalArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button3 = function () {
                                         IFData.route.STAR = names[2];
@@ -1029,10 +1033,10 @@ let programs = {
                                 //Number 4
                                 if (arrivalArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(arrivalArray[integer + pagePlus].fullName);
-                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(arrivalArray[integer + pagePlus].name);
+                                    renderText(arrivalArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button4 = function () {
                                         IFData.route.STAR = names[3];
@@ -1042,10 +1046,10 @@ let programs = {
                                 //Number 5
                                 if (arrivalArray[integer + pagePlus]) {
                                     //Runways
-                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    renderText(arrivalArray[integer + pagePlus].runways.join(','), [15, 160 + (integer * 105)], { fontSize: "35px", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Name
-                                    names.push(arrivalArray[integer + pagePlus].fullName);
-                                    renderText(arrivalArray[integer + pagePlus].fullName, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].fullName ? "11FF11" : "FFFFFF" });
+                                    names.push(arrivalArray[integer + pagePlus].name);
+                                    renderText(arrivalArray[integer + pagePlus].name, [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.STAR == arrivalArray[integer + pagePlus].name ? "11FF11" : "FFFFFF" });
                                     //Config
                                     buttonActions.sideButtons.right.button5 = function () {
                                         IFData.route.STAR = names[4];
@@ -1118,7 +1122,7 @@ IFC.init(
 
 //Render
     //Core
-    const displayObject = document.getElementById('screenPanel');
+    const displayObject = document.getElementById('screen');
     //@ts-ignore
     const displayCTX = displayObject.getContext('2d');
     //@ts-ignore
@@ -1211,6 +1215,13 @@ window.addEventListener('keydown', (e) => {
             programs.DEPARR.data.DData.airport = "";
         });
         
+    }else if(e.ctrlKey && e.key == "/"){
+        IFData.route.origin.code = "VTBS";
+        IFData.route.destination.code = "RJTT";
+        IFData.route.SID = "ALBO3H";
+        IFData.route.STAR = "ADDUM";
+        IFData.route.fixes[0] = "//SID";
+        IFData.route.fixes[1] = "//STAR";
     }else if (keyboardEnabled) {
         switch ((e.key).toUpperCase()) {
             case "BACKSPACE":

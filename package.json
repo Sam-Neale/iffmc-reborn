@@ -47,9 +47,11 @@
     }
   },
   "dependencies": {
+    "@electron/remote": "^2.0.1",
     "adm-zip": "^0.5.9",
     "atob": "^2.1.2",
     "btoa": "^1.2.1",
+    "electron-prompt": "^1.7.0",
     "electron-squirrel-startup": "^1.0.0",
     "ifc-evolved": "^1.1.4",
     "node-stream-zip": "^1.15.0",
