@@ -391,6 +391,7 @@ let programs = {
                                             let currentPages = program.data.pages.size - 1;
                                             currentIntervals = 0;
                                             let pageChecker = setInterval(() =>{
+                                                
                                                 currentIntervals++;
                                                 if(pagesRequired > currentPages && currentIntervals <= safeIntervals){
                                                     program.data.pages.set(`page${currentPages + 1}`, {
@@ -562,6 +563,7 @@ let programs = {
             let currentPages = program.data.pages.size - 1;
             currentIntervals = 0;
             let pageChecker = setInterval(() => {
+                
                 currentIntervals++;
                 if (pagesRequired > currentPages && currentIntervals <= safeIntervals) {
                     program.data.pages.set(`page${currentPages + 1}`, {
@@ -765,7 +767,86 @@ let programs = {
                 renderText(IFData.route.fixes[page.data.routePlus + integer] ? "DIRECT" : "", [15, 160 + (integer * 105)], { fontSize: "35px" })
                 renderText(IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] : "☐☐☐☐☐☐", [985, 160 + (integer * 105)], { fontSize: "35px", align: "right", color: IFData.route.fixes[page.data.routePlus + integer] ? IFData.route.fixes[page.data.routePlus + integer] == "//SID"||IFData.route.fixes[page.data.routePlus + integer] == "//STAR" ? "11FF11" : "FFFFFF" : "FFFFFF" })
             }
-            
+            let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+            let currentPages = program.data.pages.size - 1;
+            currentIntervals = 0;
+            let pageChecker = setInterval(() => {
+                currentIntervals++;
+                if (pagesRequired > currentPages && currentIntervals <= safeIntervals) {
+                    program.data.pages.set(`page${currentPages + 1}`, {
+                        num: currentPages + 1,
+                        data: {
+                            sbLayout: {
+                                left: {},
+                                right: {
+                                    button1: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 0;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button2: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 1;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button3: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 2;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button4: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 3;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    },
+                                    button5: function () {
+                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                        let integer = 4;
+                                        if (SPInput != "") {
+                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                            SPInput = "";
+                                        } else {
+                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                        }
+                                    }
+                                }
+                            },
+                            routePlus: currentPages * 5
+                        }
+                    })
+                    currentPages = program.data.pages.size - 1;
+                } else if (pagesRequired < currentPages) {
+                    currentPages = program.data.pages.size - 1;
+                    program.data.pages.delete(`page${currentPages}`);
+                } else {
+                    clearInterval(pageChecker)
+                }
+            }, 25);
         }
     },
     DEPARR: {
@@ -837,8 +918,6 @@ let programs = {
                         program.data.AData.data = arrivalData;
                     }
                     arrivalData = program.data.AData.data;
-                    if(departureData){
-                        if(arrivalData){
                             if (program.data.step == "CORE") {
                                 if(program.data.pages.size != 1){
                                     program.data.pages.clear();
@@ -848,18 +927,30 @@ let programs = {
                                 }
                                 
                                 //Left Column
-                                renderText("< DEPARTURE", [15, 160], { fontSize: "35px", align: "left" })
+                                if (departureData) {
+                                    renderText("< DEPARTURE", [15, 160], { fontSize: "35px", align: "left" })
+                                }else{
+                                    renderText("✕ DEPARTURE", [15, 160], { fontSize: "35px", align: "left", color: "FF1111"});
+                                }
+                                
+                                
                                 //Center Column
                                 renderText(IFData.route.origin.code, [500, 160], { fontSize: "35px", align: "center" })
                                 renderText(IFData.route.destination.code, [500, 265], { fontSize: "35px", align: "center" })
                                 //Right Column
                                 //renderText("ARRIVAL >", [985, 160], { fontSize: "35px", align: "right" })
-                                renderText("ARRIVAL >", [985, 265], { fontSize: "35px", align: "right" })
+                                if (arrivalData) {
+                                    renderText("ARRIVAL >", [985, 265], { fontSize: "35px", align: "right" })
+                                } else {
+                                    renderText("ARRIVAL ✕", [985, 265], { fontSize: "35px", align: "right", color: "FF1111" });
+                                }
                                 buttonActions.sideButtons = {
                                     left: {
                                         button1: function () {
-                                            program.data.step = "DEPARTURE"
-                                            program.data.airport = IFData.route.origin.code
+                                            if(departureData){
+                                                program.data.step = "DEPARTURE"
+                                                program.data.airport = IFData.route.origin.code
+                                            }
                                         }
                                     },
                                     right: {
@@ -868,8 +959,11 @@ let programs = {
                                             //program.data.airport = IFData.route.origin.code
                                         },
                                         button2: function () {
-                                            program.data.step = "ARRIVAL"
-                                            program.data.airport = IFData.route.destination.code
+                                            if (arrivalData) {
+                                                program.data.step = "ARRIVAL"
+                                                program.data.airport = IFData.route.destination.code
+                                            }
+                                            
                                         }
                                     }
                                 }
@@ -1056,12 +1150,6 @@ let programs = {
                                     }
                                 }
                             }
-                        }else{
-                            error("NO ARR DATA", 5000);
-                        }
-                    }else{
-                        error("NO DEP DATA", 5000);
-                    }
                 }else{
                     error("MISSING ARR AIRPORT", 5000);
                 }
