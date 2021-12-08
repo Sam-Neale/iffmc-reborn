@@ -505,6 +505,87 @@ let programs = {
                                 if(SPInput != ""){
                                     IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                     SPInput = "";
+let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+                                            let currentPages = program.data.pages.size - 1;
+                                            currentIntervals = 0;
+                                            let pageChecker = setInterval(() =>{
+                                                
+                                                currentIntervals++;
+                                                if(pagesRequired > currentPages && currentIntervals <= safeIntervals){
+                                                    program.data.pages.set(`page${currentPages + 1}`, {
+                                                        num: currentPages + 1,
+                                                        data: {
+                                                            sbLayout: {
+                                                                left: {},
+                                                                right: {
+                                                                    button1: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 0;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button2: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 1;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button3: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 2;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button4: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 3;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button5: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 4;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            routePlus: currentPages * 5
+                                                        }
+                                                    })
+                                                    currentPages = program.data.pages.size - 1;
+                                                }else if(pagesRequired < currentPages){
+                                                    currentPages = program.data.pages.size - 1;
+                                                    program.data.pages.delete(`page${currentPages}`);
+                                                }else{
+                                                    clearInterval(pageChecker)
+                                                }
+                                            }, 25);
                                 }else{
                                     SPInput = IFData.route.fixes[page.data.routePlus + integer];
                                     IFData.route.fixes[page.data.routePlus + integer] = "";
@@ -516,6 +597,87 @@ let programs = {
                                 if (SPInput != "") {
                                     IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                     SPInput = "";
+let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+                                            let currentPages = program.data.pages.size - 1;
+                                            currentIntervals = 0;
+                                            let pageChecker = setInterval(() =>{
+                                                
+                                                currentIntervals++;
+                                                if(pagesRequired > currentPages && currentIntervals <= safeIntervals){
+                                                    program.data.pages.set(`page${currentPages + 1}`, {
+                                                        num: currentPages + 1,
+                                                        data: {
+                                                            sbLayout: {
+                                                                left: {},
+                                                                right: {
+                                                                    button1: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 0;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button2: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 1;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button3: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 2;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button4: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 3;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button5: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 4;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            routePlus: currentPages * 5
+                                                        }
+                                                    })
+                                                    currentPages = program.data.pages.size - 1;
+                                                }else if(pagesRequired < currentPages){
+                                                    currentPages = program.data.pages.size - 1;
+                                                    program.data.pages.delete(`page${currentPages}`);
+                                                }else{
+                                                    clearInterval(pageChecker)
+                                                }
+                                            }, 25);
                                 } else {
                                     SPInput = IFData.route.fixes[page.data.routePlus + integer];
                                     IFData.route.fixes[page.data.routePlus + integer] = "";
@@ -527,6 +689,87 @@ let programs = {
                                 if (SPInput != "") {
                                     IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                     SPInput = "";
+let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+                                            let currentPages = program.data.pages.size - 1;
+                                            currentIntervals = 0;
+                                            let pageChecker = setInterval(() =>{
+                                                
+                                                currentIntervals++;
+                                                if(pagesRequired > currentPages && currentIntervals <= safeIntervals){
+                                                    program.data.pages.set(`page${currentPages + 1}`, {
+                                                        num: currentPages + 1,
+                                                        data: {
+                                                            sbLayout: {
+                                                                left: {},
+                                                                right: {
+                                                                    button1: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 0;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button2: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 1;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button3: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 2;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button4: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 3;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button5: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 4;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            routePlus: currentPages * 5
+                                                        }
+                                                    })
+                                                    currentPages = program.data.pages.size - 1;
+                                                }else if(pagesRequired < currentPages){
+                                                    currentPages = program.data.pages.size - 1;
+                                                    program.data.pages.delete(`page${currentPages}`);
+                                                }else{
+                                                    clearInterval(pageChecker)
+                                                }
+                                            }, 25);
                                 } else {
                                     SPInput = IFData.route.fixes[page.data.routePlus + integer];
                                     IFData.route.fixes[page.data.routePlus + integer] = "";
@@ -538,6 +781,87 @@ let programs = {
                                 if (SPInput != "") {
                                     IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                     SPInput = "";
+let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+                                            let currentPages = program.data.pages.size - 1;
+                                            currentIntervals = 0;
+                                            let pageChecker = setInterval(() =>{
+                                                
+                                                currentIntervals++;
+                                                if(pagesRequired > currentPages && currentIntervals <= safeIntervals){
+                                                    program.data.pages.set(`page${currentPages + 1}`, {
+                                                        num: currentPages + 1,
+                                                        data: {
+                                                            sbLayout: {
+                                                                left: {},
+                                                                right: {
+                                                                    button1: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 0;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button2: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 1;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button3: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 2;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button4: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 3;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button5: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 4;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            routePlus: currentPages * 5
+                                                        }
+                                                    })
+                                                    currentPages = program.data.pages.size - 1;
+                                                }else if(pagesRequired < currentPages){
+                                                    currentPages = program.data.pages.size - 1;
+                                                    program.data.pages.delete(`page${currentPages}`);
+                                                }else{
+                                                    clearInterval(pageChecker)
+                                                }
+                                            }, 25);
                                 } else {
                                     SPInput = IFData.route.fixes[page.data.routePlus + integer];
                                     IFData.route.fixes[page.data.routePlus + integer] = "";
@@ -549,6 +873,87 @@ let programs = {
                                 if (SPInput != "") {
                                     IFData.route.fixes[page.data.routePlus + integer] = SPInput;
                                     SPInput = "";
+let pagesRequired = Math.floor(IFData.route.fixes.length / 5) + 1;
+                                            let currentPages = program.data.pages.size - 1;
+                                            currentIntervals = 0;
+                                            let pageChecker = setInterval(() =>{
+                                                
+                                                currentIntervals++;
+                                                if(pagesRequired > currentPages && currentIntervals <= safeIntervals){
+                                                    program.data.pages.set(`page${currentPages + 1}`, {
+                                                        num: currentPages + 1,
+                                                        data: {
+                                                            sbLayout: {
+                                                                left: {},
+                                                                right: {
+                                                                    button1: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 0;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button2: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 1;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button3: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 2;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button4: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 3;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    },
+                                                                    button5: function () {
+                                                                        let page = programs.RTE.data.pages.get(`page${programs.RTE.data.pageNum}`)
+                                                                        let integer = 4;
+                                                                        if (SPInput != "") {
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = SPInput;
+                                                                            SPInput = "";
+                                                                        } else {
+                                                                            SPInput = IFData.route.fixes[page.data.routePlus + integer];
+                                                                            IFData.route.fixes[page.data.routePlus + integer] = "";
+                                                                        }
+                                                                    }
+                                                                }
+                                                            },
+                                                            routePlus: currentPages * 5
+                                                        }
+                                                    })
+                                                    currentPages = program.data.pages.size - 1;
+                                                }else if(pagesRequired < currentPages){
+                                                    currentPages = program.data.pages.size - 1;
+                                                    program.data.pages.delete(`page${currentPages}`);
+                                                }else{
+                                                    clearInterval(pageChecker)
+                                                }
+                                            }, 25);
                                 } else {
                                     SPInput = IFData.route.fixes[page.data.routePlus + integer];
                                     IFData.route.fixes[page.data.routePlus + integer] = "";
